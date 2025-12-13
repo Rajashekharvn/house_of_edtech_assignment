@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  streakCount   Int      @default(0)
+  lastStudyDate DateTime?
+
+  learningPaths LearningPath[]
+  quizAttempts  QuizAttempt[]
+}
+
+model LearningPath {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  category    String?
+  difficulty  String?
+  isPublic    Boolean  @default(false)
+  clonedFromId String?
+  isModified  Boolean  @default(true)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+
+  resources   Resource[]
+  
+  quiz        Quiz?
+  flashcards  Flashcard[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  title       String
+  url         String?
+  content     String?  // For code snippets or text notes
+  type        String
+  summary     String?  // AI Generated
+  isCompleted Boolean  @default(false)
+  
+  pathId      String
+  path        LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Flashcard {
+  id          String   @id @default(uuid())
+  front       String   // Term or Question
+  back        String   // Definition or Answer
+  isMastered  Boolean  @default(false)
+  
+  pathId      String
+  path        LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quiz {
+  id          String   @id @default(uuid())
+  questions   Json     // Stores array of { question, options[], answer }
+  
+  pathId      String   @unique
+  path        LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attempts    QuizAttempt[]
+}
+
+model QuizAttempt {
+  id             String   @id @default(uuid())
+  score          Int
+  totalQuestions Int
+  passed         Boolean  @default(false)
+  
+  quizId         String
+  quiz           Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+}
