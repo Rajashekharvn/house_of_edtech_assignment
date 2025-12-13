@@ -360,7 +360,7 @@ export async function generateFlashcards(pathId: string) {
     // If flashcards exist, return success
     if (path.flashcards.length > 0) return { success: true };
 
-    const context = path.resources.map(r =>
+    const context = path.resources.map((r: typeof path.resources[0]) =>
         `Title: ${r.title}\nSummary: ${r.summary || r.content || "No content"}`
     ).join("\n\n").slice(0, 15000);
 
