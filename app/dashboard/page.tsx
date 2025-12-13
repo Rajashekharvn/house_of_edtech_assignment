@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     _count: {
       resources: path.resources.length
     },
-    completedCount: path.resources.filter(r => r.isCompleted).length
+    completedCount: path.resources.filter((r: typeof path.resources[0]) => r.isCompleted).length
   }));
 
   return (
