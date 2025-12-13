@@ -241,7 +241,7 @@ export async function cloneLearningPath(pathId: string) {
     // Copy resources
     if (originalPath.resources.length > 0) {
         await db.resource.createMany({
-            data: originalPath.resources.map(res => ({
+            data: originalPath.resources.map((res: typeof originalPath.resources[0]) => ({
                 pathId: newPath.id,
                 title: res.title,
                 url: res.url,
