@@ -289,7 +289,7 @@ export async function generateQuiz(pathId: string, regenerate: boolean = false) 
     if (path.quiz && !regenerate) return { success: true };
 
     // Aggregate context from all resources with titles
-    const context = path.resources.map(r =>
+    const context = path.resources.map((r: typeof path.resources[0]) =>
         `Resource Title: "${r.title}"\nSummary: ${r.summary || r.content || "No content"}`
     ).join("\n\n").slice(0, 15000); // Limit context size
 
