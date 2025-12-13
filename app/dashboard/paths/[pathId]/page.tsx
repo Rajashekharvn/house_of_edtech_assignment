@@ -80,7 +80,7 @@ export default async function PathDetailPage({ params }: { params: Promise<{ pat
                                             </div>
                                         </div>
                                     ) : (
-                                        path.resources.map((resource, index) => (
+                                        path.resources.map((resource: typeof path.resources[0], index: number) => (
                                             <div key={resource.id} className="relative pl-8 md:pl-0 group printable-module">
                                                 {/* Connecting Line (Desktop) */}
                                                 {index !== path.resources.length - 1 && (
