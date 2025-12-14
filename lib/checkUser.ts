@@ -36,14 +36,28 @@ export const checkUser = async () => {
         return updatedUser;
     }
 
-    const newUser = await db.user.create({
-        data: {
-            clerkId: user.id,
-            email: user.emailAddresses[0].emailAddress,
-            firstName: user.firstName,
-            lastName: user.lastName,
-        },
-    });
+    try {
+        const newUser = await db.user.create({
+            data: {
+                clerkId: user.id,
+                email: user.emailAddresses[0].emailAddress,
+                firstName: user.firstName,
+                lastName: user.lastName,
+            },
+        });
+        return newUser;
+    } catch (error: any) {
+        // If there's a unique constraint violation on clerkId, it means the user was created concurrently.
+        // We can just fetch the user in that case.
+        if (error.code === 'P2002' && error.meta?.target?.includes('clerkId')) {
+            const existingUser = await db.user.findUnique({
+                where: {
+                    clerkId: user.id,
+                },
+            });
+            return existingUser;
+        }
+        throw error;
+    }
 
-    return newUser;
 };
