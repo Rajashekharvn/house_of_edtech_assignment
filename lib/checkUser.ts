@@ -8,75 +8,45 @@ export const checkUser = async () => {
         return null;
     }
 
-    const loggedInUser = await db.user.findUnique({
-        where: {
-            clerkId: user.id,
-        },
-    });
-
-    if (loggedInUser) {
-        return loggedInUser;
-    }
-
-    const existingUser = await db.user.findUnique({
-        where: {
-            email: user.emailAddresses[0].emailAddress,
-        }
-    });
-
-    if (existingUser) {
-        const updatedUser = await db.user.update({
-            where: { id: existingUser.id },
-            data: {
-                clerkId: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName
-            }
-        });
-        return updatedUser;
-    }
-
     try {
-        const newUser = await db.user.create({
-            data: {
+        const loggedInUser = await db.user.upsert({
+            where: {
+                clerkId: user.id,
+            },
+            create: {
                 clerkId: user.id,
                 email: user.emailAddresses[0].emailAddress,
                 firstName: user.firstName,
                 lastName: user.lastName,
             },
+            update: {
+                email: user.emailAddresses[0].emailAddress,
+                firstName: user.firstName,
+                lastName: user.lastName,
+            },
         });
-        return newUser;
-    } catch (error: any) {
-        // If there's a unique constraint violation on clerkId, it means the user was created concurrently.
-        // We can just fetch the user in that case.
-        if (error.code === 'P2002') {
-            if (error.meta?.target?.includes('clerkId')) {
-                const existingUser = await db.user.findUnique({
-                    where: {
-                        clerkId: user.id,
-                    },
-                });
-                return existingUser;
-            }
 
-            if (error.meta?.target?.includes('email')) {
-                const existingUser = await db.user.findUnique({
-                    where: {
-                        email: user.emailAddresses[0].emailAddress,
+        return loggedInUser;
+    } catch (error: any) {
+        // If there's a unique constraint violation on email, it means the user exists with a different clerkId (or race condition on email).
+        // We find the user by email and assume ownership (updating the clerkId).
+        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+            const existingUser = await db.user.findUnique({
+                where: {
+                    email: user.emailAddresses[0].emailAddress,
+                }
+            });
+
+            if (existingUser) {
+                const updatedUser = await db.user.update({
+                    where: { id: existingUser.id },
+                    data: {
+                        clerkId: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName
                     }
                 });
-
-                if (existingUser) {
-                    const updatedUser = await db.user.update({
-                        where: { id: existingUser.id },
-                        data: {
-                            clerkId: user.id,
-                            firstName: user.firstName,
-                            lastName: user.lastName
-                        }
-                    });
-                    return updatedUser;
-                }
+                return updatedUser;
             }
         }
         throw error;
