@@ -40,8 +40,7 @@ Test your knowledge instantly. The AI analyzes *all* resources in your path to g
 - Source attribution (knows which resource the question came from)
 - Score tracking and history
 
-### 4. ⚡ Smart Flashcards
-Convert your learning path into a study deck. The AI extracts terminology and concepts to create "Front/Back" flashcards for spaced repetition.
+
 
 ## 🏃‍♂️ Getting Started
 
