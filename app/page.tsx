@@ -16,16 +16,14 @@ export default async function Home() {
   return (
     <>
       {/* Background Effects */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-grid opacity-100 dark:opacity-40 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[120px]" />
-      </div>
+      {/* Background Effects */}
+      <div className="fixed inset-0 z-0 bg-black bg-grid pointer-events-none overflow-hidden" />
 
       {/* Fixed Navbar */}
       <Navbar />
 
       {/* Page Content */}
-      <main className="relative z-10 pt-16">
+      <main className="relative z-10">
         <Hero />
         <Features />
         <Footer />

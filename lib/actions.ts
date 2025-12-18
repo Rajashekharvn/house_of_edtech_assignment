@@ -316,7 +316,7 @@ export async function getPathDetails(pathId: string) {
                 select: { firstName: true, lastName: true }
             },
             resources: {
-                select: { id: true, title: true, type: true }
+                select: { id: true, title: true, type: true, url: true, content: true, summary: true }
             },
             _count: {
                 select: { stars: true, resources: true }

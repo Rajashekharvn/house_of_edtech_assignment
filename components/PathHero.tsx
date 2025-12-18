@@ -33,11 +33,27 @@ interface PathHeroProps {
             isCompleted: boolean;
         }>;
         quiz?: any;
+        userId?: string;
+        user?: {
+            firstName: string | null;
+            lastName: string | null;
+        };
     };
     backLink?: string;
 }
 
-export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
+export function PathHero({ path, backLink = "/dashboard", isReadOnly = false }: PathHeroProps & { isReadOnly?: boolean }) {
+    // ... (rest of the component)
+
+    // ...
+
+    {
+        isReadOnly && path.user && path.userId && (
+            <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+                Created by <Link href={`/profile/${path.userId}`} className="text-slate-900 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors">{path.user.firstName} {path.user.lastName}</Link>
+            </p>
+        )
+    }
     const router = useRouter();
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [title, setTitle] = useState(path.title);
@@ -48,6 +64,7 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
     const [isExporting, setIsExporting] = useState(false);
 
     const handleUpdate = async (field: string, value: string | boolean) => {
+        if (isReadOnly) return;
         try {
             const res = await updateLearningPath(path.id, { [field]: value });
             if (res?.error) {
@@ -64,6 +81,7 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
     };
 
     const handleVisibilityToggle = async (checked: boolean) => {
+        if (isReadOnly) return;
         if (checked && path.resources.length === 0) {
             showToast.error("Add resources to make public");
             return;
@@ -111,11 +129,11 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
 
     return (
         <div id="path-hero" className="w-full max-w-6xl mx-auto mb-12 pt-8 px-4 md:px-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            {/* 1. Breadcrumb Navigation (Modern SaaS) */}
+            {/* 1. Breadcrumb Navigation */}
             <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-8 font-medium">
-                <Link href="/dashboard" className="hover:text-slate-900 transition-colors flex items-center gap-1.5">
-                    <LayoutDashboard className="w-3.5 h-3.5" />
-                    Dashboard
+                <Link href={isReadOnly ? "/explore" : "/dashboard"} className="hover:text-slate-900 transition-colors flex items-center gap-1.5">
+                    {isReadOnly ? <Trophy className="w-3.5 h-3.5" /> : <LayoutDashboard className="w-3.5 h-3.5" />}
+                    {isReadOnly ? "Explore" : "Dashboard"}
                 </Link>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
                 <span className="text-slate-400 cursor-default">{category}</span>
@@ -127,7 +145,7 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
                 {/* Left Column: Title & Context */}
                 <div className="flex-1 space-y-6 w-full max-w-3xl">
                     <div className="space-y-3">
-                        {isEditing === "title" ? (
+                        {isEditing === "title" && !isReadOnly ? (
                             <Input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
@@ -138,14 +156,23 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
                             />
                         ) : (
                             <h1
-                                onClick={() => setIsEditing("title")}
-                                className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-50 tracking-tight leading-tight cursor-text"
+                                onClick={() => !isReadOnly && setIsEditing("title")}
+                                className={cn(
+                                    "text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-50 tracking-tight leading-tight",
+                                    !isReadOnly && "cursor-text hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                                )}
                             >
                                 {path.title}
                             </h1>
                         )}
 
-                        {isEditing === "description" ? (
+                        {isReadOnly && path.user && path.userId && (
+                            <p className="text-base font-medium text-slate-500 dark:text-slate-400">
+                                Created by <Link href={`/profile/${path.userId}`} className="text-slate-900 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors">{path.user.firstName} {path.user.lastName}</Link>
+                            </p>
+                        )}
+
+                        {isEditing === "description" && !isReadOnly ? (
                             <Textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
@@ -154,10 +181,13 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
                             />
                         ) : (
                             <p
-                                onClick={() => setIsEditing("description")}
-                                className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl cursor-text hover:text-slate-600 transition-colors"
+                                onClick={() => !isReadOnly && setIsEditing("description")}
+                                className={cn(
+                                    "text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl",
+                                    !isReadOnly && "cursor-text hover:text-slate-600 transition-colors"
+                                )}
                             >
-                                {path.description || "Add a brief description to this learning path..."}
+                                {path.description || (isReadOnly ? "No description provided." : "Add a brief description to this learning path...")}
                             </p>
                         )}
                     </div>
@@ -169,16 +199,16 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
                             <BadgeSelect
                                 value={category}
                                 options={["Development", "Design", "Business", "Marketing", "Data Science"]}
-                                isEditing={isEditing === "category"}
-                                onEdit={() => setIsEditing("category")}
+                                isEditing={isEditing === "category" && !isReadOnly}
+                                onEdit={() => !isReadOnly && setIsEditing("category")}
                                 onChange={(v: string) => { setCategory(v); handleUpdate("category", v); }}
                                 className="bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-300"
                             />
                             <BadgeSelect
                                 value={difficulty}
                                 options={["Beginner", "Intermediate", "Advanced"]}
-                                isEditing={isEditing === "difficulty"}
-                                onEdit={() => setIsEditing("difficulty")}
+                                isEditing={isEditing === "difficulty" && !isReadOnly}
+                                onEdit={() => !isReadOnly && setIsEditing("difficulty")}
                                 onChange={(v: string) => { setDifficulty(v); handleUpdate("difficulty", v); }}
                                 className={cn(
                                     "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 shadow-sm",
@@ -209,59 +239,65 @@ export function PathHero({ path, backLink = "/dashboard" }: PathHeroProps) {
                 <div className="flex flex-col items-start md:items-end gap-6 w-full md:w-auto">
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2 no-export w-full md:w-auto justify-start md:justify-end">
-                        <div className="flex items-center gap-2 mr-2 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200 dark:border-zinc-700">
-                            <span className={cn("text-xs font-medium", isPublic ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500")}>
-                                {isPublic ? "Public" : "Private"}
-                            </span>
-                            <Switch
-                                checked={isPublic}
-                                onCheckedChange={handleVisibilityToggle}
-                                className={cn("data-[state=checked]:bg-indigo-600")}
-                            />
-                        </div>
+                        {!isReadOnly && (
+                            <div className="flex items-center gap-2 mr-2 px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200 dark:border-zinc-700">
+                                <span className={cn("text-xs font-medium", isPublic ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500")}>
+                                    {isPublic ? "Public" : "Private"}
+                                </span>
+                                <Switch
+                                    checked={isPublic}
+                                    onCheckedChange={handleVisibilityToggle}
+                                    className={cn("data-[state=checked]:bg-indigo-600")}
+                                />
+                            </div>
+                        )}
                         <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting} className="gap-2 h-9">
                             <Share2 className="w-4 h-4" /> Export
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="h-9 w-9">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={async () => await deleteLearningPath(path.id)} className="text-red-600">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Delete Path
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-
-                    {/* Progress Widget */}
-                    <div className="w-full md:w-64 bg-slate-50 dark:bg-zinc-900 rounded-xl p-4 border border-slate-100 dark:border-zinc-800">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Progress</span>
-                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{Math.round(progress)}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-indigo-600 rounded-full transition-all duration-700"
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                        <div className="mt-2 text-[11px] text-slate-400 text-right">
-                            {completedCount} / {totalCount} completed
-                        </div>
-
-                        {progress === 100 && (
-                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800">
-                                <Link href={`/dashboard/paths/${path.id}/quiz`}>
-                                    <Button size="sm" className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20">
-                                        <BrainCircuit className="w-4 h-4" /> Mastery Quiz
+                        {!isReadOnly && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon" className="h-9 w-9">
+                                        <MoreHorizontal className="w-4 h-4" />
                                     </Button>
-                                </Link>
-                            </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={async () => await deleteLearningPath(path.id)} className="text-red-600">
+                                        <Trash2 className="w-4 h-4 mr-2" /> Delete Path
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
+
+                    {/* Progress Widget - Only show if not read only (owner view) or maybe show summary for visitors? For now hide. */}
+                    {!isReadOnly && (
+                        <div className="w-full md:w-64 bg-slate-50 dark:bg-zinc-900 rounded-xl p-4 border border-slate-100 dark:border-zinc-800">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Progress</span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{Math.round(progress)}%</span>
+                            </div>
+                            <div className="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-indigo-600 rounded-full transition-all duration-700"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                            <div className="mt-2 text-[11px] text-slate-400 text-right">
+                                {completedCount} / {totalCount} completed
+                            </div>
+
+                            {progress === 100 && (
+                                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800">
+                                    <Link href={`/dashboard/paths/${path.id}/quiz`}>
+                                        <Button size="sm" className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20">
+                                            <BrainCircuit className="w-4 h-4" /> Mastery Quiz
+                                        </Button>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

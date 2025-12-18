@@ -42,11 +42,12 @@ type Resource = {
     flashcards?: any[];
 };
 
-export function ResourceCard({ resource }: { resource: Resource }) {
+export function ResourceCard({ resource, isReadOnly = false }: { resource: Resource, isReadOnly?: boolean }) {
     const [isCompleted, setIsCompleted] = useState(resource.isCompleted);
     const [isSummarizing, setIsSummarizing] = useState(false);
 
     const handleToggle = async (checked: boolean) => {
+        if (isReadOnly) return;
         setIsCompleted(checked);
         await toggleResourceCompletion(resource.id, checked, resource.pathId);
     };
@@ -117,12 +118,12 @@ export function ResourceCard({ resource }: { resource: Resource }) {
     };
 
     return (
-        <Card className={`group relative transition-all duration-300 border border-slate-200 dark:border-zinc-800 shadow-sm ${isCompleted
+        <Card className={`group relative transition-all duration-300 border border-slate-200 dark:border-zinc-800 shadow-sm ${isCompleted && !isReadOnly
             ? 'bg-slate-50/50 dark:bg-zinc-900/20'
             : 'bg-white dark:bg-zinc-900 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800'}`}>
 
             {/* Completed Badge (Overlay) */}
-            {isCompleted && (
+            {isCompleted && !isReadOnly && (
                 <div className="absolute top-0 right-0 p-4">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400">
                         <BookOpenCheck className="w-3 h-3" /> Completed
@@ -134,18 +135,20 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                 <div className="flex items-start gap-4 md:gap-6">
                     {/* Left: Type Indicator & Checkbox */}
                     <div className="flex flex-col items-center gap-4 shrink-0">
-                        <div className={`p-3 rounded-2xl transition-colors ${isCompleted
+                        <div className={`p-3 rounded-2xl transition-colors ${isCompleted && !isReadOnly
                             ? 'bg-slate-100 dark:bg-zinc-800 grayscale opacity-60'
                             : 'bg-slate-50 dark:bg-zinc-800/50 ring-1 ring-slate-100 dark:ring-zinc-700'}`}>
                             {getIcon()}
                         </div>
-                        <div className="relative">
-                            <Checkbox
-                                checked={isCompleted}
-                                onCheckedChange={handleToggle}
-                                className={`w-5 h-5 rounded-md border-2 transition-all duration-300 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 data-[state=checked]:text-white ${!isCompleted ? 'border-slate-300 dark:border-slate-600' : ''}`}
-                            />
-                        </div>
+                        {!isReadOnly && (
+                            <div className="relative">
+                                <Checkbox
+                                    checked={isCompleted}
+                                    onCheckedChange={handleToggle}
+                                    className={`w-5 h-5 rounded-md border-2 transition-all duration-300 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 data-[state=checked]:text-white ${!isCompleted ? 'border-slate-300 dark:border-slate-600' : ''}`}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Middle: Content & Meta */}
@@ -230,7 +233,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                         <div className="flex flex-wrap items-center justify-between pt-2 gap-y-2">
                             <div className="flex items-center gap-3">
                                 <PrimaryAction />
-                                {!resource.summary && (
+                                {!resource.summary && !isReadOnly && (
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -245,28 +248,30 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                             </div>
 
                             {/* Secondary Actions Dropdown */}
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
-                                        <MoreVertical className="w-4 h-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
-                                    {resource.summary && (
-                                        <>
-                                            <DropdownMenuItem onClick={handleSummarize} disabled={isSummarizing}>
-                                                <RefreshCw className="w-4 h-4 mr-2" /> Regenerate Summary
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={handleClearSummary} className="text-amber-600 focus:text-amber-700 focus:bg-amber-50">
-                                                <X className="w-4 h-4 mr-2" /> Clear Summary
-                                            </DropdownMenuItem>
-                                        </>
-                                    )}
-                                    <DropdownMenuItem onClick={async () => await deleteResource(resource.id, resource.pathId)} className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
-                                        <Trash2 className="w-4 h-4 mr-2" /> Delete Resource
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {!isReadOnly && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                                            <MoreVertical className="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48">
+                                        {resource.summary && (
+                                            <>
+                                                <DropdownMenuItem onClick={handleSummarize} disabled={isSummarizing}>
+                                                    <RefreshCw className="w-4 h-4 mr-2" /> Regenerate Summary
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={handleClearSummary} className="text-amber-600 focus:text-amber-700 focus:bg-amber-50">
+                                                    <X className="w-4 h-4 mr-2" /> Clear Summary
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        <DropdownMenuItem onClick={async () => await deleteResource(resource.id, resource.pathId)} className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
+                                            <Trash2 className="w-4 h-4 mr-2" /> Delete Resource
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
                         </div>
                     </div>
                 </div>

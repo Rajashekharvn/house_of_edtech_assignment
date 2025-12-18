@@ -154,19 +154,48 @@ export function PathPreviewDialog({ open, onOpenChange, pathId }: PathPreviewDia
                                         <BookOpen className="w-4 h-4 text-indigo-500" />
                                         Resources Preview
                                     </h4>
-                                    <div className="grid gap-2">
-                                        {path.resources.map((res: any) => (
-                                            <div key={res.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
-                                                <div className="p-2 rounded-md bg-slate-50 dark:bg-zinc-800 shrink-0">
-                                                    {getIcon(res.type)}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate">
-                                                        {res.title}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">
-                                                        {res.type}
-                                                    </p>
+                                    <div className="relative space-y-0 pl-4">
+                                        {path.resources.map((res: any, index: number) => (
+                                            <div key={res.id} className="relative pb-8 last:pb-0">
+                                                {/* Connecting Line */}
+                                                {index !== path.resources.length - 1 && (
+                                                    <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-slate-100 dark:bg-zinc-800" />
+                                                )}
+
+                                                <div className="flex gap-4">
+                                                    {/* Number Badge */}
+                                                    <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-slate-100 bg-white text-xs font-bold text-slate-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-slate-400">
+                                                        {index + 1}
+                                                    </div>
+
+                                                    {/* Card */}
+                                                    <div className="flex-1 rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="p-1.5 rounded-md bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-slate-400">
+                                                                    {getIcon(res.type)}
+                                                                </div>
+                                                                <h5 className="font-semibold text-slate-900 dark:text-slate-200">
+                                                                    {res.title}
+                                                                </h5>
+                                                            </div>
+                                                            <Badge variant="secondary" className="capitalize text-[10px] px-1.5">
+                                                                {res.type}
+                                                            </Badge>
+                                                        </div>
+
+                                                        {res.summary && (
+                                                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                                                                {res.summary}
+                                                            </p>
+                                                        )}
+
+                                                        {!res.summary && res.url && (
+                                                            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500 font-mono truncate max-w-[300px]">
+                                                                {res.url}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

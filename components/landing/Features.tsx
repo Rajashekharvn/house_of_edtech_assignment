@@ -26,33 +26,38 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-24 px-6 bg-transparent">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-20 text-center">
-          <Badge className="mb-4 bg-indigo-100 text-indigo-600">
-            Core Features
-          </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Built for modern learners
+    <section id="features" className="py-32 px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-24 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
+            Everything you need completely
+            <span className="text-gradient-premium block mt-2">Reimagined.</span>
           </h2>
-          <p className="mt-4 text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-            Everything you need to learn deeply — without distractions.
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            A powerful suite of tools designed to help you learn faster, retain more, and master complex topics.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((f, i) => (
             <div
               key={i}
-              className="rounded-3xl bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md p-10 border border-slate-200/60 dark:border-white/5 shadow-sm hover:shadow-xl transition"
+              className="bento-card group flex flex-col justify-between"
             >
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                <f.icon className="h-7 w-7" />
+              <div>
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-lg">
+                  <f.icon className="h-7 w-7" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white tracking-tight">
+                  {f.title}
+                </h3>
+                <p className="text-slate-400 leading-relaxed font-light">
+                  {f.description}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-900 dark:text-white">{f.title}</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                {f.description}
-              </p>
+
+              {/* Decorative gradient blob for effect */}
+              <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-indigo-500/20 blur-[60px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-500" />
             </div>
           ))}
         </div>

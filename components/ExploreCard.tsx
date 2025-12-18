@@ -121,11 +121,13 @@ export function ExploreCard({ path, hasPath, isOwner }: ExploreCardProps) {
                 <CardFooter className="pt-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-black/20 flex items-center gap-2">
                     <Button
                         variant="outline"
-                        onClick={() => setShowPreview(true)}
+                        asChild
                         className="flex-1 gap-2 h-9 text-xs sm:text-sm bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800"
                     >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Preview</span>
+                        <Link href={`/path/${path.id}`}>
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview</span>
+                        </Link>
                     </Button>
                     <Button
                         onClick={isOwner ? () => router.push(`/dashboard/paths/${path.id}`) : handleClone}
