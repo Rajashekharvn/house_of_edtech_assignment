@@ -12,14 +12,14 @@ export function Hero() {
           v2.0 is live
         </Badge>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white">
           Learn faster with
           <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             AI-guided focus
           </span>
         </h1>
 
-        <p className="mt-6 mx-auto max-w-xl text-lg text-slate-600 leading-relaxed">
+        <p className="mt-6 mx-auto max-w-xl text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
           MindSprout transforms scattered tutorials into structured learning
           paths, summaries, and adaptive practice.
         </p>
@@ -37,7 +37,7 @@ export function Hero() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-10 rounded-full"
+              className="h-14 px-10 rounded-full dark:bg-zinc-900/50 dark:border-zinc-800 dark:hover:bg-zinc-800"
             >
               Explore Features
             </Button>

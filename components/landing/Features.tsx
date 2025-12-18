@@ -32,10 +32,10 @@ export function Features() {
           <Badge className="mb-4 bg-indigo-100 text-indigo-600">
             Core Features
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
             Built for modern learners
           </h2>
-          <p className="mt-4 text-slate-600 max-w-xl mx-auto">
+          <p className="mt-4 text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
             Everything you need to learn deeply — without distractions.
           </p>
         </div>
@@ -44,13 +44,13 @@ export function Features() {
           {features.map((f, i) => (
             <div
               key={i}
-              className="rounded-3xl bg-white/40 backdrop-blur-md p-10 border border-slate-200/60 shadow-sm hover:shadow-xl transition"
+              className="rounded-3xl bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md p-10 border border-slate-200/60 dark:border-white/5 shadow-sm hover:shadow-xl transition"
             >
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                 <f.icon className="h-7 w-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">{f.title}</h3>
-              <p className="text-slate-600 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-3 text-slate-900 dark:text-white">{f.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 {f.description}
               </p>
             </div>

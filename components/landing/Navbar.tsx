@@ -28,14 +28,14 @@ export function Navbar() {
         {/* Logo */}
         <div className="flex items-center gap-2 font-semibold tracking-tight">
           <BrainCircuit className="h-5 w-5 text-indigo-600" />
-          <span className="text-slate-900">MindSprout</span>
+          <span className="text-slate-900 dark:text-white">MindSprout</span>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-6">
           <Link
             href="/sign-in"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 transition"
+            className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
           >
             Log in
           </Link>
