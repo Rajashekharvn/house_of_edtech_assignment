@@ -10,7 +10,6 @@ import { generateResourceSummary } from "@/lib/ai-actions";
 import dynamic from "next/dynamic";
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { showToast } from "@/lib/toast";
-import toast from "react-hot-toast";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -57,11 +56,11 @@ export function ResourceCard({ resource }: { resource: Resource }) {
         const toastId = showToast.loading("Generating AI summary...");
         try {
             await generateResourceSummary(resource.id, resource.pathId);
-            toast.dismiss(toastId);
+            showToast.dismiss(toastId);
             showToast.success("Summary generated successfully!");
         } catch (e) {
             console.error(e);
-            toast.dismiss(toastId);
+            showToast.dismiss(toastId);
             showToast.error((e as Error).message || "Failed to generate summary");
         } finally {
             setIsSummarizing(false);
@@ -198,8 +197,9 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                                     <SyntaxHighlighter
                                         language="javascript"
                                         style={vscDarkPlus}
-                                        customStyle={{ margin: 0, borderRadius: 0, fontSize: '13px' }}
+                                        customStyle={{ margin: 0, borderRadius: 0, fontSize: '13px', maxWidth: '100%', overflowX: 'auto' }}
                                         showLineNumbers={true}
+                                        wrapLongLines={false} // Ensure it scrolls rather than wraps if user prefers, usually code blocks scroll.
                                     >
                                         {resource.content}
                                     </SyntaxHighlighter>
@@ -227,7 +227,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                         )}
 
                         {/* Action Bar */}
-                        <div className="flex items-center justify-between pt-2">
+                        <div className="flex flex-wrap items-center justify-between pt-2 gap-y-2">
                             <div className="flex items-center gap-3">
                                 <PrimaryAction />
                                 {!resource.summary && (

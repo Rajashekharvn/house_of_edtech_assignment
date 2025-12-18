@@ -61,7 +61,7 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Dashboard</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5 text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-muted-foreground mt-0.5 text-slate-600 dark:text-slate-400">
                         Welcome back, {user.firstName || "Scholar"}! {totalResources - totalCompleted > 0 ? `${totalResources - totalCompleted} resources to go.` : "All caught up!"}
                     </p>
                 </div>
@@ -78,28 +78,29 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
                         if (activePathWithWork) {
                             const progress = Math.round((activePathWithWork.completedCount / activePathWithWork._count.resources) * 100);
                             return (
-                                <div className="relative overflow-hidden rounded-xl border border-indigo-100 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-6 shadow-sm group">
-                                    <div className="flex items-center justify-between gap-6">
+                                <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-md p-6 shadow-xl group">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 opacity-50" />
+                                    <div className="relative z-10 flex items-center justify-between gap-6">
                                         <div className="flex-1">
-                                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-semibold mb-3">
+                                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-3 border border-indigo-500/20">
                                                 <Zap className="w-3 h-3" />
                                                 <span>Continue Learning</span>
                                             </div>
-                                            <h2 className="text-xl font-bold text-slate-900 dark:text-foreground mb-2">
+                                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                                                 {activePathWithWork.title}
                                             </h2>
-                                            <p className="text-sm text-slate-600 dark:text-muted-foreground">
+                                            <p className="text-sm text-slate-600 dark:text-slate-300">
                                                 You're <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{progress}%</span> complete. Keep going!
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="text-right">
                                                 <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{progress}%</div>
-                                                <div className="text-xs text-slate-500 dark:text-muted-foreground">{activePathWithWork.completedCount}/{activePathWithWork._count.resources} done</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400">{activePathWithWork.completedCount}/{activePathWithWork._count.resources} done</div>
                                             </div>
                                             <Button
                                                 size="default"
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg border-0"
                                                 asChild
                                             >
                                                 <a href={`/dashboard/paths/${activePathWithWork.id}`}>
@@ -113,10 +114,10 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
                         }
                         // Fallback if no active path
                         return (
-                            <div className="rounded-xl border border-dashed border-slate-200 dark:border-border bg-slate-50/50 dark:bg-card/50 p-8 flex flex-col items-center justify-center text-center min-h-[160px]">
-                                <BookOpen className="w-10 h-10 text-slate-300 dark:text-muted-foreground mb-3" />
-                                <h3 className="text-base font-medium text-slate-900 dark:text-foreground">No active paths</h3>
-                                <p className="text-sm text-slate-500 dark:text-muted-foreground mb-3">Start a new learning journey today.</p>
+                            <div className="rounded-xl border border-dashed border-white/10 bg-white/5 backdrop-blur-sm p-8 flex flex-col items-center justify-center text-center min-h-[160px]">
+                                <BookOpen className="w-10 h-10 text-slate-600 mb-3" />
+                                <h3 className="text-base font-medium text-slate-200">No active paths</h3>
+                                <p className="text-sm text-slate-500 mb-3">Start a new learning journey today.</p>
                                 <CreatePathDialog />
                             </div>
                         );
@@ -124,31 +125,31 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
                 </div>
 
                 {/* Side: Progress Overview (1 col) */}
-                <div className="bg-white dark:bg-card rounded-xl border border-slate-200 dark:border-border p-5 shadow-sm">
-                    <h3 className="font-semibold text-slate-900 dark:text-foreground flex items-center gap-2 mb-4">
+                <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-lg">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-200 flex items-center gap-2 mb-4">
                         <Trophy className="w-4 h-4 text-yellow-500" />
                         Overview
                     </h3>
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-500 dark:text-muted-foreground">Active Paths</span>
-                            <span className="text-2xl font-bold text-slate-900 dark:text-foreground">{totalPaths}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Active Paths</span>
+                            <span className="text-2xl font-bold text-slate-900 dark:text-slate-200">{totalPaths}</span>
                         </div>
-                        <div className="w-full h-px bg-slate-100 dark:bg-border" />
+                        <div className="w-full h-px bg-slate-200 dark:bg-white/10" />
                         <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-500 dark:text-muted-foreground">Resources</span>
-                            <span className="text-2xl font-bold text-slate-900 dark:text-foreground">{totalResources}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Resources</span>
+                            <span className="text-2xl font-bold text-slate-900 dark:text-slate-200">{totalResources}</span>
                         </div>
-                        <div className="w-full h-px bg-slate-100 dark:bg-border" />
+                        <div className="w-full h-px bg-slate-200 dark:bg-white/10" />
                         <div className="space-y-2">
                             <div className="flex items-center justify-between text-xs">
-                                <span className="text-slate-500 dark:text-muted-foreground">Completion</span>
+                                <span className="text-slate-500 dark:text-slate-400">Completion</span>
                                 <span className="font-bold text-indigo-600 dark:text-indigo-400">{overallProgress}%</span>
                             </div>
-                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-2 w-full bg-slate-100 dark:bg-black/20 rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-500"
+                                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                                     style={{ width: `${overallProgress}%` }}
                                 />
                             </div>
@@ -158,29 +159,29 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-card p-3 rounded-lg border border-slate-200 dark:border-border shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-white/5 backdrop-blur-md p-3 rounded-lg border border-slate-200 dark:border-white/10 shadow-lg">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                         placeholder="Search your learning paths..."
-                        className="pl-9 bg-slate-50 dark:bg-input border-slate-200 dark:border-border text-slate-900 dark:text-foreground placeholder:text-slate-400"
+                        className="pl-9 bg-slate-100 dark:bg-black/20 border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-200 placeholder:text-slate-500 focus-visible:ring-indigo-500/50"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
                 {mounted ? (
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-full sm:w-[160px] bg-slate-50 dark:bg-card dark:border-border">
+                        <SelectTrigger className="w-full sm:w-[160px] bg-slate-100 dark:bg-black/20 border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-200">
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-900 dark:text-slate-200">
                             {categories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                <SelectItem key={cat} value={cat} className="focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">{cat}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 ) : (
-                    <div className="w-full sm:w-[160px] h-10 bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-md" />
+                    <div className="w-full sm:w-[160px] h-10 bg-white/5 border border-white/10 rounded-md" />
                 )}
             </div>
 
@@ -193,7 +194,7 @@ export function DashboardView({ user, paths }: DashboardViewProps) {
                     <CreatePathDialog />
                 </div>
             ) : (
-                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-5 grid-cols-2 lg:grid-cols-3">
                     {filteredPaths.map((path) => (
                         <PathCard key={path.id} path={path} />
                     ))}

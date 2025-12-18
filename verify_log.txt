@@ -1,0 +1,37 @@
+C:\Users\rajun\OneDrive\Desktop\EdTech\mind-sprout\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259
+        throw new PrismaClientInitializationError(
+              ^
+
+
+PrismaClientInitializationError: `PrismaClient` needs to be constructed with a non-empty, valid `PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t (C:\Users\rajun\OneDrive\Desktop\EdTech\mind-sprout\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259:15)
+    at <anonymous> (C:\Users\rajun\OneDrive\Desktop\EdTech\mind-sprout\scripts\verify-prisma.ts:7:16)
+    at Object.<anonymous> (C:\Users\rajun\OneDrive\Desktop\EdTech\mind-sprout\scripts\verify-prisma.ts:54:40)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object.transformer (C:\Users\rajun\AppData\Local\npm-cache\_npx\fd45a72a545557e9\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at cjsLoader (node:internal/modules/esm/translators:309:5) {
+  clientVersion: '7.1.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+Node.js v22.20.0

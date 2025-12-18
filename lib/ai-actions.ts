@@ -317,31 +317,41 @@ export async function generateQuiz(pathId: string, regenerate: boolean = false) 
     Do not wrap in markdown code blocks. Just raw JSON.
     `;
 
-    try {
-        const { text } = await generateText({
-            model: google("gemini-2.5-flash"),
-            prompt: prompt,
-        });
+    const maxRetries = 3;
+    let attempt = 0;
+    let lastError;
 
-        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const questions = JSON.parse(jsonStr);
+    while (attempt < maxRetries) {
+        try {
+            const { text } = await generateText({
+                model: google("gemini-2.5-flash"),
+                prompt: prompt,
+            });
 
-        // Upsert the quiz (Create if new, Update if exists)
-        await db.quiz.upsert({
-            where: { pathId: path.id },
-            update: { questions: questions },
-            create: {
-                pathId: path.id,
-                questions: questions
-            }
-        });
+            const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const questions = JSON.parse(jsonStr);
 
-        revalidatePath(`/dashboard/paths/${pathId}`);
-        return { success: true };
-    } catch (error) {
-        console.error("Quiz Gen Error:", error);
-        throw new Error(`Failed to generate quiz: ${(error as Error).message}`);
+            // Upsert the quiz (Create if new, Update if exists)
+            await db.quiz.upsert({
+                where: { pathId: path.id },
+                update: { questions: questions },
+                create: {
+                    pathId: path.id,
+                    questions: questions
+                }
+            });
+
+            revalidatePath(`/dashboard/paths/${pathId}`);
+            return { success: true };
+        } catch (error) {
+            console.error(`Quiz Gen Error (Attempt ${attempt + 1}):`, error);
+            lastError = error;
+            attempt++;
+            if (attempt < maxRetries) await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // standard backoff
+        }
     }
+
+    throw new Error(`Failed to generate quiz after ${maxRetries} attempts: ${(lastError as Error).message}`);
 }
 
 export async function generateFlashcards(pathId: string) {

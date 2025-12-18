@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/lib/toast";
+import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider";
 
 export default function RootLayout({
@@ -33,9 +33,11 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <div className="fixed inset-0 z-[-1] bg-grid opacity-30 dark:opacity-20 pointer-events-none" />
+          <div className="fixed inset-0 z-[-1] bg-gradient-to-tr from-indigo-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >

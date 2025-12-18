@@ -256,3 +256,240 @@ export async function cloneLearningPath(pathId: string) {
     revalidatePath("/dashboard");
     return newPath;
 }
+
+export async function togglePathStar(pathId: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const existingStar = await db.pathStar.findUnique({
+        where: {
+            userId_pathId: {
+                userId: user.id,
+                pathId
+            }
+        }
+    });
+
+    if (existingStar) {
+        await db.pathStar.delete({
+            where: { id: existingStar.id }
+        });
+    } else {
+        await db.pathStar.create({
+            data: {
+                userId: user.id,
+                pathId
+            }
+        });
+
+        // Notify Path Owner
+        const path = await db.learningPath.findUnique({ where: { id: pathId }, select: { userId: true, title: true } });
+        if (path && path.userId !== user.id) {
+            await db.notification.create({
+                data: {
+                    userId: path.userId,
+                    type: "STAR",
+                    message: `${user.firstName || "Someone"} starred your path "${path.title}".`,
+                    actorId: user.id,
+                    pathId: pathId,
+                    isRead: false
+                }
+            });
+        }
+    }
+
+    revalidatePath("/explore");
+    revalidatePath("/dashboard");
+}
+
+export async function getPathDetails(pathId: string) {
+    const user = await checkUser();
+
+    // Fetch path with resources and star count
+    // We allow fetching even if not logged in? Ideally yes for public paths, but checkUser ensures auth.
+    // If we want public access, we might need a separate check, but for now enforcing auth is safe.
+
+    const path = await db.learningPath.findUnique({
+        where: { id: pathId },
+        include: {
+            user: {
+                select: { firstName: true, lastName: true }
+            },
+            resources: {
+                select: { id: true, title: true, type: true }
+            },
+            _count: {
+                select: { stars: true, resources: true }
+            },
+            stars: user ? {
+                where: { userId: user.id },
+                select: { id: true }
+            } : false
+        }
+    });
+
+    if (!path) throw new Error("Path not found");
+    if (!path.isPublic && path.userId !== user?.id) throw new Error("Unauthorized");
+
+    return {
+        ...path,
+        isStarred: user ? path.stars.length > 0 : false
+    };
+}
+
+export async function toggleFollow(targetUserId: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+    if (user.id === targetUserId) throw new Error("Cannot follow yourself");
+
+    const existingFollow = await db.follows.findUnique({
+        where: {
+            followerId_followingId: {
+                followerId: user.id,
+                followingId: targetUserId
+            }
+        }
+    });
+
+    if (existingFollow) {
+        await db.follows.delete({
+            where: {
+                followerId_followingId: {
+                    followerId: user.id,
+                    followingId: targetUserId
+                }
+            }
+        });
+    } else {
+        await db.follows.create({
+            data: {
+                followerId: user.id,
+                followingId: targetUserId
+            }
+        });
+
+        // Create Notification
+        await db.notification.create({
+            data: {
+                userId: targetUserId,
+                type: "FOLLOW",
+                message: `${user.firstName || "Someone"} followed you.`,
+                actorId: user.id,
+                isRead: false
+            }
+        });
+    }
+
+    revalidatePath(`/profile/${targetUserId}`);
+    return !existingFollow;
+}
+
+export async function getNotifications() {
+    const user = await checkUser();
+    if (!user) return [];
+
+    return await db.notification.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 20
+    });
+}
+
+export async function markNotificationRead(id: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.notification.update({
+        where: { id, userId: user.id },
+        data: { isRead: true }
+    });
+
+    revalidatePath("/dashboard");
+}
+
+export async function markAllNotificationsRead() {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.notification.updateMany({
+        where: { userId: user.id, isRead: false },
+        data: { isRead: true }
+    });
+
+    revalidatePath("/dashboard");
+}
+
+export async function getUserProfile(userId: string) {
+    const currentUser = await checkUser();
+
+    const user = await db.user.findUnique({
+        where: { id: userId },
+        include: {
+            _count: {
+                select: {
+                    following: true,
+                    followedBy: true,
+                    learningPaths: { where: { isPublic: true } }
+                }
+            },
+            followedBy: currentUser ? {
+                where: { followerId: currentUser.id }
+            } : false
+        }
+    });
+
+    if (!user) return null;
+
+    const publicPaths = await db.learningPath.findMany({
+        where: { userId, isPublic: true },
+        include: {
+            _count: { select: { resources: true } },
+            user: { select: { firstName: true, lastName: true } }
+        },
+        orderBy: { createdAt: "desc" }
+    });
+
+    return {
+        user,
+        stats: {
+            followers: user._count.followedBy,
+            following: user._count.following,
+            paths: user._count.learningPaths
+        },
+        paths: publicPaths,
+        isFollowing: currentUser ? user.followedBy.length > 0 : false
+    };
+}
+
+export async function getFollowers(userId: string) {
+    const followers = await db.follows.findMany({
+        where: { followingId: userId },
+        include: {
+            follower: {
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    // avatarUrl: true // If we had this
+                }
+            }
+        }
+    });
+    return followers.map((f: any) => f.follower);
+}
+
+export async function getFollowing(userId: string) {
+    const following = await db.follows.findMany({
+        where: { followerId: userId },
+        include: {
+            following: {
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                }
+            }
+        }
+    });
+    return following.map((f: any) => f.following);
+}

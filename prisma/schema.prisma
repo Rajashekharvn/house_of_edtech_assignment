@@ -4,6 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -19,7 +21,12 @@ model User {
   lastStudyDate DateTime?
 
   learningPaths LearningPath[]
-  quizAttempts  QuizAttempt[]
+  quizAttempt   QuizAttempt[]
+  stars         PathStar[]
+  
+  followedBy    Follows[] @relation("following")
+  following     Follows[] @relation("follower")
+  notifications Notification[]
 }
 
 model LearningPath {
@@ -40,6 +47,7 @@ model LearningPath {
   
   quiz        Quiz?
   flashcards  Flashcard[]
+  stars       PathStar[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -100,4 +108,38 @@ model QuizAttempt {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   createdAt      DateTime @default(now())
+}
+
+model PathStar {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pathId    String
+  path      LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, pathId])
+}
+
+model Follows {
+  followerId  String
+  followingId String
+  follower    User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // STAR, FOLLOW
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  actorId   String?
+  pathId    String?
 }

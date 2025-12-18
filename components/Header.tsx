@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { UserButtonWrapper } from "@/components/UserButtonWrapper";
-import { Sparkles, LayoutDashboard, Globe, Flame } from "lucide-react";
+import { Sparkles, LayoutDashboard, Globe, Flame, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const Header = async () => {
     const user = await checkUser();
@@ -26,7 +27,7 @@ export const Header = async () => {
                 <span>MindSprout</span>
             </Link>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
                 {user && (
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-full text-sm font-semibold border border-orange-100 dark:border-orange-900/50" title="Current Study Streak">
                         <Flame className="h-4 w-4 fill-orange-600 dark:fill-orange-400" />
@@ -34,6 +35,7 @@ export const Header = async () => {
                     </div>
                 )}
 
+                <NotificationBell />
                 <ThemeToggle />
                 <Link href="/explore">
                     <Button variant="ghost" className="gap-2 px-2 sm:px-4">
@@ -47,6 +49,14 @@ export const Header = async () => {
                         <span className="hidden sm:inline">Dashboard</span>
                     </Button>
                 </Link>
+                {user && (
+                    <Link href={`/profile/${user.id}`}>
+                        <Button variant="ghost" className="gap-2 px-2 sm:px-4">
+                            <User className="h-4 w-4" />
+                            <span className="hidden sm:inline">Profile</span>
+                        </Button>
+                    </Link>
+                )}
                 <UserButtonWrapper />
             </div>
         </header>
