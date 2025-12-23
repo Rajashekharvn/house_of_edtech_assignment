@@ -14,6 +14,11 @@ model User {
   email     String   @unique
   firstName String?
   lastName  String?
+  bio       String?
+  isPrivate Boolean  @default(false)
+  dailyGoal Int      @default(30) // Minutes
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -54,6 +59,7 @@ model LearningPath {
 
   @@index([userId])
   @@index([isPublic, category])
+  @@index([isPublic, createdAt]) // Optimized for "Newest Public Paths"
 }
 
 model Resource {
@@ -133,7 +139,8 @@ model Follows {
   followerId  String
   followingId String
   follower    User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  isAccepted  Boolean  @default(true)
   createdAt   DateTime @default(now())
 
   @@id([followerId, followingId])
@@ -150,4 +157,7 @@ model Notification {
   
   actorId   String?
   pathId    String?
+
+  @@index([userId, createdAt]) // Optimized for "User's latest notifications"
+  @@index([userId, isRead])    // Optimized for "User's unread notifications"
 }
