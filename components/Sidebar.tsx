@@ -137,7 +137,7 @@ export const Sidebar = ({ streakCount = 0, onHoverChange }: SidebarProps) => {
                                     )}
                                     title={!isExpanded ? route.label : undefined}
                                 >
-                                    <route.icon className={cn("h-5 w-5 min-w-[20px] mr-4", route.color)} />
+                                    <route.icon className={cn("h-5 w-5 min-w-[20px]", isExpanded && "mr-4", route.color)} />
                                     <span className={cn(
                                         "transition-opacity duration-300",
                                         isExpanded ? "opacity-100" : "opacity-0"
