@@ -102,7 +102,7 @@ export const Sidebar = ({ streakCount = 0, onHoverChange }: SidebarProps) => {
                     // Mobile behavior
                     isMobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full",
                     // Desktop behavior (controlled by state)
-                    !isMobileOpen && "md:w-[80px]",
+                    !isMobileOpen && "md:w-[60px]",
                     isHovered && "md:w-64 md:shadow-2xl"
                 )}
                 onMouseEnter={handleMouseEnter}
