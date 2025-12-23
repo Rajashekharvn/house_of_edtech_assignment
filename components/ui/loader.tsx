@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LoaderProps {
@@ -19,15 +19,12 @@ export function Loader({ size = "md", className }: LoaderProps) {
     return (
         <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
             <div className="relative">
-                {/* Outer Glow */}
                 <div className={cn(
-                    "absolute inset-0 bg-indigo-500 blur-xl opacity-20 animate-pulse rounded-full",
+                    "absolute inset-0 bg-indigo-500/20 blur-xl animate-pulse rounded-full",
                     sizeClasses[size]
                 )} />
-
-                {/* Spinner */}
-                <Loader2 className={cn(
-                    "animate-spin text-indigo-600 dark:text-indigo-400",
+                <Sparkles className={cn(
+                    "text-indigo-600 dark:text-indigo-400 animate-pulse",
                     sizeClasses[size]
                 )} />
             </div>
@@ -42,8 +39,29 @@ export function Loader({ size = "md", className }: LoaderProps) {
 
 export function FullPageLoader() {
     return (
-        <div className="fixed inset-0 bg-slate-50/80 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <Loader size="xl" />
+        <div className="fixed inset-0 bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center z-50">
+            {/* Subtle Grid Background - kept for consistency but very faint */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+
+            <div className="relative flex flex-col items-center gap-8 z-10">
+                {/* Minimalist Logo */}
+                <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 bg-indigo-500/30 blur-3xl rounded-full animate-pulse" />
+                    <Sparkles className="h-12 w-12 text-indigo-600 dark:text-indigo-400 fill-indigo-600/10 dark:fill-indigo-400/10 animate-pulse duration-[3000ms]" />
+                </div>
+
+                {/* Elegant Typography */}
+                <div className="flex flex-col items-center gap-2">
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                        MindSprout
+                    </h3>
+                    <div className="flex items-center gap-1.5">
+                        <div className="h-1 w-1 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="h-1 w-1 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="h-1 w-1 bg-indigo-500 rounded-full animate-bounce" />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

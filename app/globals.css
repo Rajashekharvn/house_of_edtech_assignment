@@ -214,6 +214,10 @@
   animation: shimmer 2s linear infinite;
 }
 
+.animate-bounce-slow {
+  animation: bounce 3s infinite;
+}
+
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-[length:200%_auto];
   animation: gradient-x 3s ease infinite;

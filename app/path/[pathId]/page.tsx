@@ -1,5 +1,5 @@
 import { getPathDetails } from "@/lib/actions";
-import { Header } from "@/components/Header";
+
 import { PathHero } from "@/components/PathHero";
 import { PublicResourceList } from "@/components/PublicResourceList";
 import { notFound } from "next/navigation";
@@ -28,7 +28,6 @@ export default async function PublicPathPage({ params }: { params: Promise<{ pat
 
     return (
         <div className="min-h-screen">
-            <Header />
             <main className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* 1. Hero (Read-only) */}
                 <div className="relative">

@@ -7,7 +7,7 @@ import { UserListDialog } from "@/components/UserListDialog";
 import { CreatePathDialog } from "@/components/CreatePathDialog";
 import { User, Users, FileText, Calendar } from "lucide-react";
 import { db } from "@/lib/db";
-import { Header } from "@/components/Header";
+
 
 interface ProfilePageProps {
     params: Promise<{ userId: string }>;
@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const profile = await getUserProfile(userId);
     if (!profile) return notFound();
 
-    const { user, stats, paths, isFollowing } = profile;
+    const { user, stats, paths, isFollowing, hasRequested, isPrivate } = profile;
     const currentUser = await checkUser();
     const isOwnProfile = currentUser?.id === user.id;
 
@@ -38,7 +38,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
     return (
         <div className="min-h-screen">
-            <Header />
             <main className="p-4 md:p-8">
                 <div className="max-w-5xl mx-auto space-y-8">
 
@@ -47,17 +46,33 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                         user={user}
                         stats={stats}
                         isFollowing={isFollowing}
+                        hasRequested={hasRequested}
                         isOwnProfile={isOwnProfile}
+                        isPrivate={isPrivate}
                     />
 
                     {/* Content Grid */}
                     <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-indigo-500" />
-                            Public Learning Paths
-                        </h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-indigo-500" />
+                                Public Learning Paths
+                            </h2>
+                        </div>
 
-                        {paths.length > 0 ? (
+                        {isPrivate && !isFollowing && !isOwnProfile ? (
+                            <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-xl border border-dashed border-slate-200 dark:border-zinc-800 flex flex-col items-center gap-4">
+                                <div className="h-16 w-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+                                    <span className="text-3xl">🔒</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">This account is private</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
+                                        Follow this account to see their learning paths and resources.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : paths.length > 0 ? (
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {paths.map((path: any) => (
                                     <ExploreCard

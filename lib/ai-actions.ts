@@ -1,7 +1,8 @@
 "use server";
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
+import { generateText, generateObject } from "ai";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { revalidatePath } from "next/cache";
@@ -70,192 +71,112 @@ export async function generateResourceSummary(resourceId: string, pathId: string
 
     const topic = path?.title || "this topic";
 
-    let prompt = "";
+    // Enhanced Prompt Construction
+    let systemRole = `You are an expert tutor specializing in ${topic}. Your goal is to provide a summary that maximizes learning retention.`;
+    let userPrompt = "";
+
+    // Common structure for all summaries to ensure consistency
+    const formatInstructions = `
+    Format your response in Markdown. Use the following structure:
+    ## 🎯 Core Concept
+    [A 1-sentence definition of the main idea]
+
+    ## 🔑 Key Takeaways
+    - [Key point 1]
+    - [Key point 2]
+    - [Key point 3]
+
+    ## 💡 Practical Application
+    [One specific example of how to apply this knowledge]
+    `;
 
     switch (resource.type) {
         case 'code':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to explain the following code snippet which I added to my learning path.
-            Provide a concise explanation (3 key bullet points) covering:
-            1. What the code does (logic flow).
-            2. Key concepts and syntax used.
-            3. Best practices or common pitfalls related to this code.
+            userPrompt = `
+            Analyze this code snippet from the perspective of a senior engineer code review.
             
             Code Snippet:
+            \`\`\`
             ${content}
+            \`\`\`
             
-            Explanation:`;
-            break;
-
-        case 'text':
-            prompt = `
-            You are an expert tutor in ${topic}.
+            Provide a summary that explains:
+            1. The logic flow (how it works).
+            2. Syntax highlights (unusual or important patterns).
+            3. Best practices (efficiency, readability, security) or potential pitfalls.
             
-            Your task is to clean up and structure the following notes I took.
-            Do NOT add external information or topics not mentioned in the notes.
-            Provide a concise summary (3 key bullet points) that:
-            1. Organizes the provided text.
-            2. Fixes any clarity or grammar issues.
-            3. Highlights the core message of the notes.
-            
-            My Notes:
-            ${content}
-            
-            Refined Notes:`;
+            ${formatInstructions}
+            `;
             break;
 
         case 'video':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize the following YouTube video resource I added to my learning path.
-            Based on the title and description, provide a concise summary (3 key bullet points) covering:
-            1. The core educational value/topic of the video.
-            2. Key concepts or techniques explained.
-            3. Actionable steps or practical takeaways for mastering ${topic}.
+            userPrompt = `
+            Summarize this video resource. Focus on the visual or demonstrative aspects if inferred from the description.
             
             Video Details:
             ${content}
             
-            Summary:`;
+            Explain:
+            1. The main problem or topic addressed.
+            2. The solution or technique demonstrated.
+            3. Why this specific video is valuable for learning ${topic}.
+
+            ${formatInstructions}
+            `;
             break;
 
-        case 'pdf':
-            prompt = `
-            You are an expert tutor in ${topic}.
+        case 'article':
+        case 'blog':
+            userPrompt = `
+            Synthesize the main arguments of this article.
             
-            Your task is to summarize this PDF document I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The main topics and structure of the document.
-            2. Key information, data, or insights presented.
-            3. How this PDF contributes to mastering ${topic}.
-            
-            PDF Resource:
+            Article Content:
             ${content}
             
-            Summary:`;
-            break;
+            Focus on:
+            1. The author's main thesis.
+            2. Supporting evidence or arguments.
+            3. How this changes or reinforces understanding of ${topic}.
 
-        case 'book':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize this book/e-book resource I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The book's central themes and key chapters.
-            2. Important concepts, frameworks, or methodologies presented.
-            3. How reading this book will help master ${topic}.
-            
-            Book Details:
-            ${content}
-            
-            Summary:`;
-            break;
-
-        case 'course':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize this online course I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The course curriculum and learning objectives.
-            2. Key skills and knowledge areas covered.
-            3. Expected outcomes and how it relates to mastering ${topic}.
-            
-            Course Details:
-            ${content}
-            
-            Summary:`;
-            break;
-
-        case 'podcast':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize this podcast episode I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The main discussion topics and guest insights (if any).
-            2. Key takeaways and expert opinions shared.
-            3. How this podcast episode enhances understanding of ${topic}.
-            
-            Podcast Details:
-            ${content}
-            
-            Summary:`;
+            ${formatInstructions}
+            `;
             break;
 
         case 'tutorial':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize this tutorial I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The step-by-step process or workflow taught.
-            2. Key techniques, tools, or commands demonstrated.
-            3. Practical applications and how to apply this to ${topic}.
+            userPrompt = `
+            Break down this tutorial into a high-level workflow.
             
             Tutorial Content:
             ${content}
             
-            Summary:`;
+            Focus on:
+            1. The prerequisite knowledge needed.
+            2. The step-by-step logical flow (not every minor click, but the major phases).
+            3. The final outcome/artifact produced.
+
+            ${formatInstructions}
+            `;
             break;
 
-        case 'documentation':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to summarize this documentation I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The main features, APIs, or concepts documented.
-            2. Important usage patterns, parameters, or configurations.
-            3. How this documentation supports mastering ${topic}.
-            
-            Documentation:
-            ${content}
-            
-            Summary:`;
-            break;
-
-        case 'exercise':
-            prompt = `
-            You are an expert tutor in ${topic}.
-            
-            Your task is to analyze this exercise/practice problem I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The problem statement and what skills it tests.
-            2. Key concepts or techniques needed to solve it.
-            3. Learning objectives and how it reinforces ${topic}.
-            
-            Exercise:
-            ${content}
-            
-            Analysis:`;
-            break;
-
-        case 'article':
         default:
-            prompt = `
-            You are an expert tutor in ${topic}.
+            userPrompt = `
+            Summarize this learning resource.
             
-            Your task is to summarize the following content from a resource I added to my learning path.
-            Provide a concise summary (3 key bullet points) covering:
-            1. The main argument or thesis of the content.
-            2. Key facts, evidence, or concepts presented.
-            3. The relevance and application to mastering ${topic}.
-            
-            Resource Content:
+            Content:
             ${content}
             
-            Summary:`;
+            Distill the most important information for a student learning ${topic}.
+            
+            ${formatInstructions}
+            `;
             break;
     }
 
     try {
         const { text } = await generateText({
             model: google("gemini-2.5-flash"),
-            prompt: prompt,
+            system: systemRole,
+            prompt: userPrompt,
         });
 
         await db.resource.update({
@@ -284,74 +205,56 @@ export async function generateQuiz(pathId: string, regenerate: boolean = false) 
     });
 
     if (!path) throw new Error("Path not found");
-
-    // If quiz exists and we are NOT regenerating, just return success
     if (path.quiz && !regenerate) return { success: true };
 
-    // Aggregate context from all resources with titles
     const context = path.resources.map((r: typeof path.resources[0]) =>
         `Resource Title: "${r.title}"\nSummary: ${r.summary || r.content || "No content"}`
-    ).join("\n\n").slice(0, 15000); // Limit context size
+    ).join("\n\n").slice(0, 20000);
 
-    const prompt = `
-    You are an expert teacher. Create a comprehensive 10-question multiple choice quiz based on the following learning path resources:
-    
-    "${context}"
-    
-    For each question:
-    1. Assign a difficulty level: "easy", "medium", or "hard"
-    2. Track which resource the question is based on (use the exact resource title)
-    3. Ensure questions cover different resources when possible
-    4. Make these questions DIFFERENT from any standard questions if possible, to vary the experience.
-    
-    The output must be a valid JSON array of objects with this structure:
-    [
-        {
-            "question": "Question text here",
-            "options": ["A", "B", "C", "D"],
-            "answer": 0, // index of correct option (0-3)
-            "difficulty": "easy" | "medium" | "hard",
-            "sourceResourceTitle": "Exact resource title this question is based on"
-        }
-    ]
-    Do not wrap in markdown code blocks. Just raw JSON.
-    `;
+    // Zod Schema for Structured Output
+    const QuizSchema = z.object({
+        questions: z.array(z.object({
+            question: z.string().describe("The text of the question"),
+            options: z.array(z.string()).length(4).describe("4 possible answers"),
+            answer: z.number().min(0).max(3).describe("The index of the correct option (0-3)"),
+            difficulty: z.enum(["easy", "medium", "hard"]).describe("The difficulty level"),
+            sourceResourceTitle: z.string().describe("The title of the resource this question is based on")
+        })).min(5).max(10)
+    });
 
-    const maxRetries = 3;
-    let attempt = 0;
-    let lastError;
+    try {
+        const { object } = await generateObject({
+            model: google("gemini-1.5-pro"), // Use Pro for better reasoning on complex tasks
+            schema: QuizSchema,
+            system: "You are an expert exam creator. Your goal is to create a challenging and fair multiple-choice quiz.",
+            prompt: `
+            Create a 10-question quiz based on the following learning path resources:
+            
+            "${context}"
+            
+            Guidelines:
+            1. Questions should test understanding, not just rote memorization.
+            2. Distractors (wrong answers) should be plausible.
+            3. Cover a variety of resources if possible.
+            4. VARY the difficulty.
+            `,
+        });
 
-    while (attempt < maxRetries) {
-        try {
-            const { text } = await generateText({
-                model: google("gemini-2.5-flash"),
-                prompt: prompt,
-            });
+        await db.quiz.upsert({
+            where: { pathId: path.id },
+            update: { questions: object.questions },
+            create: {
+                pathId: path.id,
+                questions: object.questions
+            }
+        });
 
-            const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-            const questions = JSON.parse(jsonStr);
-
-            // Upsert the quiz (Create if new, Update if exists)
-            await db.quiz.upsert({
-                where: { pathId: path.id },
-                update: { questions: questions },
-                create: {
-                    pathId: path.id,
-                    questions: questions
-                }
-            });
-
-            revalidatePath(`/dashboard/paths/${pathId}`);
-            return { success: true };
-        } catch (error) {
-            console.error(`Quiz Gen Error (Attempt ${attempt + 1}):`, error);
-            lastError = error;
-            attempt++;
-            if (attempt < maxRetries) await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // standard backoff
-        }
+        revalidatePath(`/dashboard/paths/${pathId}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Quiz Gen Error:", error);
+        throw new Error("Failed to generate quiz. Please try again.");
     }
-
-    throw new Error(`Failed to generate quiz after ${maxRetries} attempts: ${(lastError as Error).message}`);
 }
 
 export async function generateFlashcards(pathId: string) {
@@ -367,51 +270,40 @@ export async function generateFlashcards(pathId: string) {
     });
 
     if (!path) throw new Error("Path not found");
-    // If flashcards exist, return success
     if (path.flashcards.length > 0) return { success: true };
 
     const context = path.resources.map((r: typeof path.resources[0]) =>
         `Title: ${r.title}\nSummary: ${r.summary || r.content || "No content"}`
-    ).join("\n\n").slice(0, 15000);
+    ).join("\n\n").slice(0, 20000);
 
-    const prompt = `
-    You are an expert teacher. Create a comprehensive set of 15-20 Flashcards covering the key concepts from these learning resources:
-    
-    "${context}"
-    
-    IMPORTANT: Each flashcard should have:
-    - "front": A SHORT TERM, CONCEPT NAME, or KEY PHRASE (NOT a question)
-    - "back": A clear, concise definition or explanation
-    
-    Examples of GOOD flashcards:
-    {"front": "React Hooks", "back": "Functions that let you use state and other React features in function components"}
-    {"front": "useState", "back": "A React Hook that lets you add state to function components"}
-    
-    Examples of BAD flashcards (DO NOT DO THIS):
-    {"front": "What are React Hooks?", "back": "..."} ❌ (front is a question)
-    {"front": "Explain useState", "back": "..."} ❌ (front is a command)
-    
-    The output must be a valid JSON array of objects with this structure:
-    [
-        {
-            "front": "Short Term or Concept Name",
-            "back": "Concise Definition or Explanation"
-        }
-    ]
-    Do not wrap in markdown code blocks. Just raw JSON.
-    `;
+    const FlashcardsSchema = z.object({
+        flashcards: z.array(z.object({
+            front: z.string().describe("The term, concept, or prompt on the front of the card"),
+            back: z.string().describe("The definition, explanation, or answer on the back")
+        })).min(10)
+    });
 
     try {
-        const { text } = await generateText({
-            model: google("gemini-2.5-flash"),
-            prompt: prompt,
+        const { object } = await generateObject({
+            model: google("gemini-1.5-pro"),
+            schema: FlashcardsSchema,
+            system: "You are an expert Spaced Repetition System (SRS) card creator.",
+            prompt: `
+            Create 15 high-quality flashcards for the following learning materials:
+            
+            "${context}"
+            
+            Rules for GOOD Flashcards:
+            1. **Atomic**: One fact per card.
+            2. **Specific**: Avoid vague prompts.
+            3. **Brief**: The back should be answerable in < 5 seconds.
+            
+            Avoid "True/False" or "What is X?" formats if possible. Use "Concept -> Definition" or "Problem -> Solution" mappings.
+            `,
         });
 
-        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const cards = JSON.parse(jsonStr);
-
         await db.flashcard.createMany({
-            data: cards.map((c: any) => ({
+            data: object.flashcards.map((c) => ({
                 front: c.front,
                 back: c.back,
                 pathId: path.id

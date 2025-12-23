@@ -1,6 +1,6 @@
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
-import { Header } from "@/components/Header";
+
 import { redirect, notFound } from "next/navigation";
 import { PathContent } from "@/components/PathContent";
 
@@ -38,8 +38,7 @@ export default async function PathDetailPage({ params }: { params: Promise<{ pat
     const isFullyCompleted = completionPercentage === 100;
 
     return (
-        <div className="min-h-screen">
-            <Header />
+        <div className="h-full">
             <main id="learning-path-content" className="container mx-auto px-4 py-8 max-w-7xl">
                 <PathContent initialPath={path as any} />
             </main>

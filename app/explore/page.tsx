@@ -1,6 +1,6 @@
 
 import { checkUser } from "@/lib/checkUser";
-import { Header } from "@/components/Header";
+
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { ExploreView } from "@/components/ExploreView";
@@ -59,8 +59,12 @@ export default async function ExplorePage() {
             isPublic: true,
             id: {
                 notIn: Array.from(excludedPathIds)
+            },
+            user: {
+                isPrivate: false
             }
         },
+
         orderBy: {
             createdAt: "desc",
         },
@@ -88,9 +92,8 @@ export default async function ExplorePage() {
     }));
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 p-4 md:p-8">
+        <div className="flex flex-col h-full">
+            <main className="flex-1">
                 <ExploreView
                     communityPaths={processPaths(communityPaths)}
                     myPublicPaths={processPaths(myPublicPaths)}
