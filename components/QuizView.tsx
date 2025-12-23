@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { BrainCircuit, CheckCircle, XCircle, Loader2, Trophy, ArrowRight, Sparkles, AlertCircle, RefreshCw, ChevronLeft } from "lucide-react";
 import { generateQuiz } from "@/lib/ai-actions";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
 import { showToast } from "@/lib/toast";
 import { saveQuizAttempt } from "@/lib/quiz-actions";
 import { Progress } from "@/components/ui/progress";
@@ -71,7 +70,7 @@ export function QuizView({ pathId, existingQuiz }: QuizViewProps) {
         }
     };
 
-    const handleAnswer = (optionIndex: number) => {
+    const handleAnswer = async (optionIndex: number) => {
         if (isAnswered) return;
         setSelectedOption(optionIndex);
         setIsAnswered(true);
@@ -79,6 +78,7 @@ export function QuizView({ pathId, existingQuiz }: QuizViewProps) {
         if (optionIndex === quizData![currentIndex].answer) {
             setScore(s => s + 1);
             if (currentIndex === quizData!.length - 1) {
+                const confetti = (await import("canvas-confetti")).default;
                 confetti({
                     particleCount: 100,
                     spread: 70,

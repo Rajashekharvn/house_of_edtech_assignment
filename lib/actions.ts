@@ -3,25 +3,141 @@
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+const CreatePathSchema = z.object({
+    title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title is too long"),
+    description: z.string().optional(),
+    category: z.string().min(1, "Category is required"),
+    difficulty: z.string().min(1, "Difficulty is required"),
+});
+
+const AddResourceSchema = z.object({
+    pathId: z.string().uuid(),
+    title: z.string().min(1, "Title is required").max(150),
+    url: z.string().url("Invalid URL").optional().or(z.literal("")),
+    content: z.string().optional(),
+    type: z.string().min(1),
+});
+
+const UpdateProfileSchema = z.object({
+    firstName: z.string().min(1, "First name is required").max(50),
+    lastName: z.string().optional(),
+    bio: z.string().max(300, "Bio must be less than 300 characters").optional(),
+    dailyGoal: z.coerce.number().min(1).max(1440).optional(),
+});
+
+export async function updateUserProfile(formData: FormData) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const rawData = {
+        firstName: formData.get("firstName"),
+        lastName: formData.get("lastName"),
+        bio: formData.get("bio"),
+        dailyGoal: formData.get("dailyGoal"),
+    };
+
+    const validated = UpdateProfileSchema.safeParse(rawData);
+
+    if (!validated.success) {
+        throw new Error(validated.error.errors[0].message);
+    }
+
+    await db.user.update({
+        where: { id: user.id },
+        data: {
+            firstName: validated.data.firstName,
+            lastName: validated.data.lastName || null,
+            bio: validated.data.bio || null,
+            dailyGoal: validated.data.dailyGoal || 30,
+        }
+    });
+
+    revalidatePath("/profile");
+    revalidatePath(`/profile/${user.id}`);
+    revalidatePath("/settings");
+}
+
+export async function togglePrivacy(isPrivate: boolean) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.user.update({
+        where: { id: user.id },
+        data: { isPrivate }
+    });
+
+    revalidatePath("/profile");
+    revalidatePath(`/profile/${user.id}`);
+    revalidatePath("/settings");
+}
+
+export async function exportUserData() {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const fullUserData = await db.user.findUnique({
+        where: { id: user.id },
+        include: {
+            learningPaths: {
+                include: {
+                    resources: true,
+                    flashcards: true,
+                    quiz: true,
+                }
+            },
+            quizAttempt: true,
+            stars: true,
+            following: true,
+            followedBy: true,
+        }
+    });
+
+    return JSON.stringify(fullUserData, null, 2);
+}
+
+
+export async function deleteAccount() {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Delete from Database
+    // This will CASCADE delete all LearningPaths, Resources, Quizzes, Flashcards, generic-content, etc.
+    await db.user.delete({
+        where: { id: user.id }
+    });
+
+    // Note: This does not delete the user from Clerk.
+    // In a production app, you would also use clerkClient.users.deleteUser(user.clerkId) here.
+    // For now, removing from DB clears all their content from the Explore page as requested.
+}
+
 
 export async function createLearningPath(formData: FormData) {
     const user = await checkUser();
     if (!user) throw new Error("Unauthorized");
 
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const category = formData.get("category") as string;
-    const difficulty = formData.get("difficulty") as string;
+    const rawData = {
+        title: formData.get("title"),
+        description: formData.get("description"),
+        category: formData.get("category"),
+        difficulty: formData.get("difficulty"),
+    };
 
-    if (!title) {
-        throw new Error("Title is required");
+    const validatedDAta = CreatePathSchema.safeParse(rawData);
+
+    if (!validatedDAta.success) {
+        throw new Error(validatedDAta.error.errors[0].message);
     }
+
+    const { title, description, category, difficulty } = validatedDAta.data;
 
     await db.learningPath.create({
         data: {
             userId: user.id,
             title,
-            description,
+            description: description || "",
             category,
             difficulty,
         },
@@ -56,11 +172,21 @@ export async function addResource(formData: FormData) {
     const user = await checkUser();
     if (!user) throw new Error("Unauthorized");
 
-    const pathId = formData.get("pathId") as string;
-    const title = formData.get("title") as string;
-    const url = formData.get("url") as string;
-    const content = formData.get("content") as string;
-    const type = formData.get("type") as string;
+    const rawData = {
+        pathId: formData.get("pathId"),
+        title: formData.get("title"),
+        url: formData.get("url") || "",
+        content: formData.get("content"),
+        type: formData.get("type"),
+    };
+
+    const validatedData = AddResourceSchema.safeParse(rawData);
+
+    if (!validatedData.success) {
+        throw new Error(validatedData.error.errors[0].message);
+    }
+
+    const { pathId, title, url, content, type } = validatedData.data;
 
     // Check for duplicates to prevent double-submission
     const existingResource = await db.resource.findFirst({
@@ -375,6 +501,7 @@ export async function toggleFollow(targetUserId: string) {
     });
 
     if (existingFollow) {
+        // Unfollow
         await db.follows.delete({
             where: {
                 followerId_followingId: {
@@ -383,11 +510,24 @@ export async function toggleFollow(targetUserId: string) {
                 }
             }
         });
+        revalidatePath(`/profile/${targetUserId}`);
+        return false;
     } else {
+        // Check if target user is private
+        const targetUser = await db.user.findUnique({
+            where: { id: targetUserId },
+            select: { isPrivate: true, firstName: true }
+        });
+
+        if (!targetUser) throw new Error("User not found");
+
+        const isAccepted = !targetUser.isPrivate; // Auto-accept if public, else pending
+
         await db.follows.create({
             data: {
                 followerId: user.id,
-                followingId: targetUserId
+                followingId: targetUserId,
+                isAccepted
             }
         });
 
@@ -395,27 +535,115 @@ export async function toggleFollow(targetUserId: string) {
         await db.notification.create({
             data: {
                 userId: targetUserId,
-                type: "FOLLOW",
-                message: `${user.firstName || "Someone"} followed you.`,
+                type: isAccepted ? "FOLLOW" : "REQUEST_FOLLOW",
+                message: isAccepted
+                    ? `${user.firstName || "Someone"} followed you.`
+                    : `${user.firstName || "Someone"} requested to follow you.`,
                 actorId: user.id,
                 isRead: false
             }
         });
+
+        revalidatePath(`/profile/${targetUserId}`);
+        return true;
+    }
+}
+
+export async function acceptFollowRequest(followerId: string, notificationId?: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.follows.update({
+        where: {
+            followerId_followingId: {
+                followerId: followerId,
+                followingId: user.id
+            }
+        },
+        data: { isAccepted: true }
+    });
+
+    // Notify the follower that request was accepted
+    await db.notification.create({
+        data: {
+            userId: followerId,
+            type: "FOLLOW_ACCEPTED",
+            message: `${user.firstName || "Someone"} accepted your follow request.`,
+            actorId: user.id,
+            isRead: false
+        }
+    });
+
+    // Update the notification to "ACCEPTED" state instead of deleting
+    if (notificationId) {
+        await db.notification.update({
+            where: { id: notificationId },
+            data: {
+                type: "REQUEST_ACCEPTED",
+                message: `You accepted the follow request.`,
+                isRead: true
+            }
+        });
     }
 
-    revalidatePath(`/profile/${targetUserId}`);
-    return !existingFollow;
+    revalidatePath("/dashboard");
+    revalidatePath(`/profile/${user.id}`);
 }
+
+export async function declineFollowRequest(followerId: string, notificationId?: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.follows.delete({
+        where: {
+            followerId_followingId: {
+                followerId: followerId,
+                followingId: user.id
+            }
+        }
+    });
+
+    // Cleanup the "Request" notification
+    if (notificationId) {
+        await db.notification.delete({
+            where: { id: notificationId }
+        });
+    }
+
+    revalidatePath("/dashboard");
+}
+
+
 
 export async function getNotifications() {
     const user = await checkUser();
     if (!user) return [];
 
-    return await db.notification.findMany({
+    const notifications = await db.notification.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: "desc" },
         take: 20
     });
+
+    // Enhance notifications with "isFollowing" status for the actor
+    const actorIds = Array.from(new Set(notifications.map(n => n.actorId).filter(Boolean))) as string[];
+
+    const follows = actorIds.length > 0 ? await db.follows.findMany({
+        where: {
+            followerId: user.id,
+            followingId: { in: actorIds },
+            isAccepted: true
+        }
+    }) : [];
+
+    const followingActorIds = new Set(follows.map(f => f.followingId));
+
+    const enhancedNotifications = notifications.map((n: any) => ({
+        ...n,
+        isFollowingActor: n.actorId ? followingActorIds.has(n.actorId) : false
+    }));
+
+    return enhancedNotifications;
 }
 
 export async function markNotificationRead(id: string) {
@@ -442,11 +670,39 @@ export async function markAllNotificationsRead() {
     revalidatePath("/dashboard");
 }
 
+export async function deleteNotification(id: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.notification.delete({
+        where: { id, userId: user.id }
+    });
+
+    revalidatePath("/dashboard");
+}
+
+export async function deleteAllNotifications() {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.notification.deleteMany({
+        where: { userId: user.id }
+    });
+
+    revalidatePath("/dashboard");
+}
+
 export async function getUserProfile(userId: string) {
     const currentUser = await checkUser();
 
-    const user = await db.user.findUnique({
-        where: { id: userId },
+    // userId could be internal ID (CUID) or Clerk ID
+    const user = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: userId },
+                { clerkId: userId }
+            ]
+        },
         include: {
             _count: {
                 select: {
@@ -463,8 +719,51 @@ export async function getUserProfile(userId: string) {
 
     if (!user) return null;
 
+    // Privacy Check
+    // If user is private AND viewer is not the user AND viewer is not an ACCEPTED follower => Return specific "private" state
+    let isFollowing = false;
+    let hasRequested = false;
+
+    if (currentUser) {
+        const followRecord = await db.follows.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId: currentUser.id,
+                    followingId: user.id
+                }
+            }
+        });
+
+        if (followRecord) {
+            isFollowing = followRecord.isAccepted;
+            hasRequested = !followRecord.isAccepted;
+        }
+    }
+
+    if (user.isPrivate && (!currentUser || currentUser.id !== user.id) && !isFollowing) {
+        // Return limited profile for private users
+        return {
+            user: {
+                ...user,
+                bio: null, // Hide bio if preferred, or keep it
+            },
+            stats: {
+                followers: user._count.followedBy,
+                following: user._count.following,
+                paths: user._count.learningPaths,
+                stars: 0
+            },
+            paths: [],
+            isFollowing,
+            hasRequested,
+            isPrivate: true
+        };
+    }
+
+
+    // Use the resolved internal ID for querying paths
     const publicPaths = await db.learningPath.findMany({
-        where: { userId, isPublic: true },
+        where: { userId: user.id, isPublic: true },
         include: {
             _count: { select: { resources: true, stars: true } },
             user: { select: { firstName: true, lastName: true } },
@@ -490,7 +789,9 @@ export async function getUserProfile(userId: string) {
             ...path,
             isStarred: currentUser ? path.stars.length > 0 : false
         })),
-        isFollowing: currentUser ? user.followedBy.length > 0 : false
+        isFollowing,
+        hasRequested,
+        isPrivate: false
     };
 }
 

@@ -1,12 +1,12 @@
 
-import jsPDF from 'jspdf';
-import { toPng } from 'html-to-image';
+import type { jsPDF as JsPDFType } from 'jspdf';
 
 // Helper to capture an element and add to PDF
-async function captureAndAddToPDF(pdf: jsPDF, element: HTMLElement, isFirstPage: boolean) {
+async function captureAndAddToPDF(pdf: JsPDFType, element: HTMLElement, isFirstPage: boolean) {
     if (!element) return;
 
     try {
+        const { toPng } = await import('html-to-image');
         const dataUrl = await toPng(element, {
             backgroundColor: '#09090b',
             quality: 0.95,
@@ -57,6 +57,7 @@ async function captureAndAddToPDF(pdf: jsPDF, element: HTMLElement, isFirstPage:
 
 export async function exportPathToPDF(pathTitle: string) {
     const filename = `${pathTitle.toLowerCase().replace(/\s+/g, '-')}-learning-path.pdf`;
+    const { default: jsPDF } = await import('jspdf');
     const pdf = new jsPDF('p', 'mm', 'a4');
 
     // 1. Capture Header/Hero - REMOVED per user request
