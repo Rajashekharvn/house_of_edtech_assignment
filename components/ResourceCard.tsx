@@ -266,7 +266,7 @@ export function ResourceCard({ resource, isReadOnly = false, onDelete }: { resou
                                                 </DropdownMenuItem>
                                             </>
                                         )}
-                                            // Updated: Use passed onDelete if available, else direct server action
+
                                         <DropdownMenuItem
                                             onClick={async () => {
                                                 if (onDelete) {
