@@ -1,7 +1,8 @@
+import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
-export const checkUser = async () => {
+export const checkUser = cache(async () => {
     const user = await currentUser();
 
     if (!user) {
@@ -61,5 +62,4 @@ export const checkUser = async () => {
         }
         throw error;
     }
-
-};
+});
