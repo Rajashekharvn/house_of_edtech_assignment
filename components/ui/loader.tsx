@@ -3,39 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface LoaderProps {
-    size?: "sm" | "md" | "lg" | "xl";
-    className?: string;
-}
 
-export function Loader({ size = "md", className }: LoaderProps) {
-    const sizeClasses = {
-        sm: "w-4 h-4",
-        md: "w-8 h-8",
-        lg: "w-12 h-12",
-        xl: "w-16 h-16"
-    };
-
-    return (
-        <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
-            <div className="relative">
-                <div className={cn(
-                    "absolute inset-0 bg-indigo-500/20 blur-xl animate-pulse rounded-full",
-                    sizeClasses[size]
-                )} />
-                <Sparkles className={cn(
-                    "text-indigo-600 dark:text-indigo-400 animate-pulse",
-                    sizeClasses[size]
-                )} />
-            </div>
-            {size === "xl" && (
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 animate-pulse">
-                    Loading...
-                </p>
-            )}
-        </div>
-    );
-}
 
 export function FullPageLoader() {
     return (
