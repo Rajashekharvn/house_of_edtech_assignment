@@ -72,7 +72,7 @@ export function ExploreCard({ path, hasPath, isOwner }: ExploreCardProps) {
 
     return (
         <>
-            <Card className="hover:shadow-md transition-shadow group flex flex-col h-full border-slate-200 dark:border-border dark:bg-card">
+            <Card className="hover:shadow-md transition-shadow group flex flex-col h-full border-slate-200 dark:border-slate-800 dark:bg-slate-900">
                 <CardHeader className="pb-1 sm:pb-3">
                     <div className="flex justify-between items-start">
                         <div className="space-y-1 w-full">
@@ -118,11 +118,11 @@ export function ExploreCard({ path, hasPath, isOwner }: ExploreCardProps) {
                     </div>
                 </CardContent>
 
-                <CardFooter className="pt-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-black/20 flex items-center gap-2">
+                <CardFooter className="pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 flex items-center gap-2">
                     <Button
                         variant="outline"
                         asChild
-                        className="flex-1 gap-2 h-9 text-xs sm:text-sm bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800"
+                        className="flex-1 gap-2 h-9 text-xs sm:text-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
                     >
                         <Link href={`/path/${path.id}`}>
                             <Eye className="w-3.5 h-3.5" />

@@ -31,16 +31,16 @@ export default async function SettingsPage() {
             </div>
 
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    <TabsTrigger value="appearance">Appearance</TabsTrigger>
-                    <TabsTrigger value="privacy">Privacy</TabsTrigger>
-                    <TabsTrigger value="account">Account</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4 lg:w-[500px] bg-slate-100 dark:bg-slate-900 p-1 border border-slate-200 dark:border-slate-800 rounded-lg h-auto">
+                    <TabsTrigger value="profile" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm rounded-md transition-all">Profile</TabsTrigger>
+                    <TabsTrigger value="appearance" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm rounded-md transition-all">Appearance</TabsTrigger>
+                    <TabsTrigger value="privacy" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm rounded-md transition-all">Privacy</TabsTrigger>
+                    <TabsTrigger value="account" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm rounded-md transition-all">Account</TabsTrigger>
                 </TabsList>
 
                 {/* PROFILE TAB */}
                 <TabsContent value="profile" className="mt-6">
-                    <Card>
+                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
                         <CardHeader>
                             <CardTitle>Profile</CardTitle>
                             <CardDescription>
@@ -62,7 +62,7 @@ export default async function SettingsPage() {
 
                 {/* APPEARANCE TAB */}
                 <TabsContent value="appearance" className="mt-6">
-                    <Card>
+                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
                         <CardHeader>
                             <CardTitle>Appearance</CardTitle>
                             <CardDescription>
@@ -85,7 +85,7 @@ export default async function SettingsPage() {
 
                 {/* PRIVACY TAB */}
                 <TabsContent value="privacy" className="mt-6">
-                    <Card>
+                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
                         <CardHeader>
                             <CardTitle>Privacy</CardTitle>
                             <CardDescription>
@@ -100,7 +100,7 @@ export default async function SettingsPage() {
 
                 {/* ACCOUNT TAB */}
                 <TabsContent value="account" className="mt-6">
-                    <Card>
+                    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm">
                         <CardHeader>
                             <CardTitle>Account</CardTitle>
                             <CardDescription>

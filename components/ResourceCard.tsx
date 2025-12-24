@@ -5,11 +5,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { deleteResource, toggleResourceCompletion, clearResourceSummary } from "@/lib/actions";
 import { ExternalLink, Trash2, Video, FileText, Sparkles, Loader2, Code, StickyNote, RefreshCw, X, BookOpen, GraduationCap, Mic, Monitor, Book, Pencil, MoreVertical, PlayCircle, BookOpenCheck } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateResourceSummary } from "@/lib/ai-actions";
 import dynamic from "next/dynamic";
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -36,10 +37,10 @@ type Resource = {
     pathId: string;
     summary?: string | null;
     quiz?: {
-        id: string;
         questions: any;
     } | null;
     flashcards?: any[];
+    notes?: { id: string; content: string }[];
 };
 
 export function ResourceCard({ resource, isReadOnly = false, onDelete }: { resource: Resource, isReadOnly?: boolean, onDelete?: () => void }) {
@@ -229,6 +230,42 @@ export function ResourceCard({ resource, isReadOnly = false, onDelete }: { resou
                             </div>
                         )}
 
+                        {/* User Note Section */}
+                        {resource.notes && resource.notes.length > 0 && (
+                            <div className="mt-4 space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <StickyNote className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                                    <span className="text-xs font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wide">My Notes</span>
+                                </div>
+                                {resource.notes.map((note, index) => (
+                                    <div key={index} className="group relative rounded-xl bg-yellow-50/50 dark:bg-yellow-950/10 border border-yellow-100 dark:border-yellow-800/30 p-4 transition-all hover:bg-yellow-50 dark:hover:bg-yellow-950/20">
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap pr-6">
+                                            {note.content}
+                                        </p>
+                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {!isReadOnly && (
+                                                <>
+                                                    <NoteDialog resourceId={resource.id} pathId={resource.pathId} existingNote={note} />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                                        onClick={async () => {
+                                                            if (confirm("Delete this note?")) {
+                                                                await deleteResourceNote(note.id, resource.pathId);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Action Bar */}
                         <div className="flex flex-wrap items-center justify-between pt-2 gap-y-2">
                             <div className="flex items-center gap-3">
@@ -244,6 +281,9 @@ export function ResourceCard({ resource, isReadOnly = false, onDelete }: { resou
                                         {isSummarizing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-indigo-400" />}
                                         {isSummarizing ? "Thinking..." : "Summarize"}
                                     </Button>
+                                )}
+                                {!isReadOnly && (
+                                    <NoteDialog resourceId={resource.id} pathId={resource.pathId} />
                                 )}
                             </div>
 
@@ -287,5 +327,87 @@ export function ResourceCard({ resource, isReadOnly = false, onDelete }: { resou
                 </div>
             </div>
         </Card>
+    );
+}
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { saveResourceNote, updateResourceNote, deleteResourceNote } from "@/lib/actions";
+
+import { useRouter } from "next/navigation";
+
+function NoteDialog({ resourceId, pathId, existingNote }: { resourceId: string, pathId?: string, existingNote?: { id: string, content: string } }) {
+    const [open, setOpen] = useState(false);
+    const [content, setContent] = useState(existingNote?.content || "");
+    const [isSaving, setIsSaving] = useState(false);
+    const router = useRouter();
+
+    // Reset content when opening fresh add dialog
+    useEffect(() => {
+        if (open && !existingNote) {
+            setContent("");
+        } else if (open && existingNote) {
+            setContent(existingNote.content);
+        }
+    }, [open, existingNote]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            if (existingNote) {
+                if (!pathId) {
+                    // Fallback if pathId missing - should rarely happen in this context
+                    toast.error("Error: Missing path context");
+                    return;
+                }
+                await updateResourceNote(existingNote.id, content, pathId);
+                toast.success("Note updated");
+            } else {
+                await saveResourceNote(resourceId, content);
+                toast.success("Note saved");
+            }
+            setOpen(false);
+            if (!existingNote) setContent("");
+            router.refresh();
+        } catch (error) {
+            toast.error("Failed to save note");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {existingNote ? (
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30">
+                        <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                ) : (
+                    <Button variant="ghost" size="sm" className="gap-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 h-8 text-xs font-medium">
+                        <StickyNote className="w-3.5 h-3.5" />
+                        Add Note
+                    </Button>
+                )}
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Personal Note</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                    <Textarea
+                        placeholder="Write your takeaways..."
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        className="min-h-[150px]"
+                    />
+                </div>
+                <DialogFooter>
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? "Saving..." : "Save Note"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }

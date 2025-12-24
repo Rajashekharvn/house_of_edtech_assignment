@@ -83,27 +83,27 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
             {/* Tabs & Toolbar */}
             <Tabs defaultValue="community" className="w-full space-y-6">
                 <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-                    <TabsList className="bg-slate-100 dark:bg-zinc-800/50 p-1 h-10 rounded-lg border border-slate-200 dark:border-zinc-700/50 shrink-0">
+                    <TabsList className="bg-slate-100 dark:bg-slate-900 p-1 h-10 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0">
                         <TabsTrigger
                             value="community"
-                            className="px-4 text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium rounded-md transition-all"
+                            className="px-4 text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium rounded-md transition-all"
                         >
                             <div className="flex items-center gap-2">
                                 <Globe className="w-4 h-4" />
                                 <span>Community</span>
-                                <span className="ml-1 text-xs opacity-70 bg-slate-200 dark:bg-zinc-700 px-1.5 rounded-full">
+                                <span className="ml-1 text-xs opacity-70 bg-slate-200 dark:bg-slate-700 px-1.5 rounded-full">
                                     {communityPaths.length}
                                 </span>
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
                             value="my-contributions"
-                            className="px-4 text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium rounded-md transition-all"
+                            className="px-4 text-sm data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium rounded-md transition-all"
                         >
                             <div className="flex items-center gap-2">
                                 <UserCircle className="w-4 h-4" />
                                 <span>My Contributions</span>
-                                <span className="ml-1 text-xs opacity-70 bg-slate-200 dark:bg-zinc-700 px-1.5 rounded-full">
+                                <span className="ml-1 text-xs opacity-70 bg-slate-200 dark:bg-slate-700 px-1.5 rounded-full">
                                     {myPublicPaths.length}
                                 </span>
                             </div>
@@ -116,14 +116,14 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                             <Input
                                 placeholder="Search paths..."
-                                className="pl-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-slate-200 h-10 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500/50 transition-all rounded-xl"
+                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 h-10 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500/50 transition-all rounded-xl"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                                         <Filter className="w-3.5 h-3.5" />
                                         <span className="truncate">{categoryFilter === "All" ? "Category" : categoryFilter}</span>
@@ -137,7 +137,7 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
                             </Select>
 
                             <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                                         <Compass className="w-3.5 h-3.5" />
                                         <span className="truncate">{difficultyFilter === "All" ? "Difficulty" : difficultyFilter}</span>
@@ -152,7 +152,7 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
                             </Select>
 
                             <Select value={sortBy} onValueChange={setSortBy}>
-                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                                <SelectTrigger className="w-full sm:w-[130px] h-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                                         <ArrowUpDown className="w-3.5 h-3.5" />
                                         <span className="truncate">{sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "Resources"}</span>
@@ -170,8 +170,8 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
 
                 <TabsContent value="community" className="animate-in fade-in slide-in-from-bottom-2 duration-300 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     {filteredCommunityPaths.length === 0 ? (
-                        <div className="py-20 px-4 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-zinc-900/50">
-                            <div className="h-12 w-12 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                        <div className="py-20 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900">
+                            <div className="h-12 w-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                                 <Compass className="w-6 h-6 text-slate-400" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
@@ -196,8 +196,8 @@ export function ExploreView({ communityPaths, myPublicPaths }: ExploreViewProps)
 
                 <TabsContent value="my-contributions" className="animate-in fade-in slide-in-from-bottom-2 duration-300 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     {filteredMyPaths.length === 0 ? (
-                        <div className="py-20 px-4 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-zinc-900/50">
-                            <div className="h-12 w-12 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                        <div className="py-20 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900">
+                            <div className="h-12 w-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                                 <LayoutGrid className="w-6 h-6 text-slate-400" />
                             </div>
                             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">

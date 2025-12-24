@@ -32,6 +32,27 @@ model User {
   followedBy    Follows[] @relation("following")
   following     Follows[] @relation("follower")
   notifications Notification[]
+  notes         ResourceNote[]
+  tags          ResourceTag[]
+  goals         Goal[]
+}
+
+model Goal {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  target      Int      
+  progress    Int      @default(0)
+  type        String   // "DAILY" | "WEEKLY"
+  metric      String   // "RESOURCES" | "QUIZZES"
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, isCompleted])
 }
 
 model LearningPath {
@@ -76,6 +97,9 @@ model Resource {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  notes       ResourceNote[]
+  tags        ResourceTag[]
 
   @@index([pathId])
 }
@@ -160,4 +184,29 @@ model Notification {
 
   @@index([userId, createdAt]) // Optimized for "User's latest notifications"
   @@index([userId, isRead])    // Optimized for "User's unread notifications"
+}
+
+model ResourceNote {
+  id         String   @id @default(uuid())
+  content    String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, resourceId])
+}
+
+model ResourceTag {
+  id         String   @id @default(uuid())
+  name       String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, resourceId, name])
 }

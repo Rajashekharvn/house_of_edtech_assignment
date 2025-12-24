@@ -44,7 +44,7 @@ export function PathCard({ path }: PathCardProps) {
     };
 
     return (
-        <Card className="hover:shadow-md transition-shadow group flex flex-col h-full border-slate-200 dark:border-border dark:bg-card">
+        <Card className="hover:shadow-md transition-shadow group flex flex-col h-full border-slate-200 dark:border-slate-800 dark:bg-slate-900">
             <CardHeader className="pb-1 sm:pb-3">
                 <div className="flex justify-between items-start">
                     <div className="space-y-1">
@@ -108,7 +108,7 @@ export function PathCard({ path }: PathCardProps) {
                 </div>
             </CardContent>
 
-            <CardFooter className="pt-3 border-t border-slate-100 dark:border-border bg-slate-50/50 dark:bg-black/20">
+            <CardFooter className="pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20">
                 <Link href={`/dashboard/paths/${path.id}`} className="w-full">
                     <Button className="w-full gap-2 bg-white text-indigo-600 hover:bg-indigo-50 border-input dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700 dark:border-0 shadow-sm transition-all px-2 h-9 text-xs sm:text-sm">
                         <span>Continue</span>

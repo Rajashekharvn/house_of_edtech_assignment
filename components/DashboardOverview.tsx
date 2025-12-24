@@ -13,7 +13,7 @@ interface DashboardOverviewProps {
 
 export function DashboardOverview({ totalPaths, totalResources, totalCompleted, totalTopics, overallProgress }: DashboardOverviewProps) {
     return (
-        <div className="bg-white dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-lg flex flex-col justify-between h-full min-h-[200px]">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col justify-between h-full min-h-[200px]">
             <h3 className="font-semibold text-slate-900 dark:text-slate-200 flex items-center gap-2 mb-4 text-sm">
                 <Activity className="w-4 h-4 text-indigo-500" />
                 Overview

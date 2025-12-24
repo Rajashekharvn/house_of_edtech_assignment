@@ -152,11 +152,11 @@ export function NotificationBell({ className }: { className?: string }) {
                 side="right"
                 align="end"
                 sideOffset={20}
-                className="w-96 p-0 overflow-hidden shadow-2xl border-slate-200 dark:border-slate-800"
+                className="w-96 p-0 overflow-hidden shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
                 onInteractOutside={(e) => e.preventDefault()}
             >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                    <h4 className="font-semibold text-sm">Notifications</h4>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30">
+                    <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Notifications</h4>
                     <div className="flex items-center gap-1">
                         {unreadCount > 0 && (
                             <Button
@@ -171,7 +171,7 @@ export function NotificationBell({ className }: { className?: string }) {
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10" onClick={handleClearAll} title="Clear all">
                             <Trash2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" onClick={() => setIsOpen(false)}>
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
@@ -179,8 +179,8 @@ export function NotificationBell({ className }: { className?: string }) {
 
                 <ScrollArea className="h-[400px]">
                     {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-sm text-slate-500 flex flex-col items-center gap-2">
-                            <Bell className="h-8 w-8 text-slate-300 mb-2" />
+                        <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400 flex flex-col items-center gap-2">
+                            <Bell className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
                             <p>No new notifications</p>
                         </div>
                     ) : (

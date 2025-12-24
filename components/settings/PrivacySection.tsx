@@ -30,7 +30,7 @@ export function PrivacySection({ isPrivate }: PrivacySectionProps) {
     };
 
     return (
-        <div className="border rounded-lg p-4 flex items-center justify-between bg-card text-card-foreground shadow-sm">
+        <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 flex items-center justify-between bg-slate-50/50 dark:bg-black/20 shadow-sm">
             <div className="space-y-0.5">
                 <Label htmlFor="privacy-mode" className="text-base font-medium">
                     Private Profile

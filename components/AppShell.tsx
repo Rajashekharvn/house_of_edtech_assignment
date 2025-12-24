@@ -10,15 +10,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         redirect("/sign-in");
     }
 
-    let streakCount = 0;
-    if (user) {
-        // Fetch streak count
-        const dbUser = await db.user.findUnique({
-            where: { id: user.id },
-            select: { streakCount: true }
-        });
-        if (dbUser) streakCount = dbUser.streakCount;
-    }
+    const streakCount = user ? user.streakCount : 0;
 
     return (
         <ShellLayout streakCount={streakCount}>

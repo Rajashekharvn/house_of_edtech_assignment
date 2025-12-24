@@ -9,44 +9,54 @@ export const checkUser = async () => {
     }
 
     try {
-        const loggedInUser = await db.user.upsert({
-            where: {
+        const existingUser = await db.user.findUnique({
+            where: { clerkId: user.id }
+        });
+
+        if (existingUser) {
+            // Check if updates are needed
+            if (
+                existingUser.email !== user.emailAddresses[0].emailAddress ||
+                existingUser.firstName !== user.firstName ||
+                existingUser.lastName !== user.lastName
+            ) {
+                return await db.user.update({
+                    where: { id: existingUser.id },
+                    data: {
+                        email: user.emailAddresses[0].emailAddress,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                    },
+                });
+            }
+            return existingUser;
+        }
+
+        // Create if not exists
+        return await db.user.create({
+            data: {
                 clerkId: user.id,
-            },
-            create: {
-                clerkId: user.id,
-                email: user.emailAddresses[0].emailAddress,
-                firstName: user.firstName,
-                lastName: user.lastName,
-            },
-            update: {
                 email: user.emailAddresses[0].emailAddress,
                 firstName: user.firstName,
                 lastName: user.lastName,
             },
         });
-
-        return loggedInUser;
     } catch (error: any) {
-        // If there's a unique constraint violation on email, it means the user exists with a different clerkId (or race condition on email).
-        // We find the user by email and assume ownership (updating the clerkId).
+        // Handle race conditions or unique constraint violations on email
         if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-            const existingUser = await db.user.findUnique({
-                where: {
-                    email: user.emailAddresses[0].emailAddress,
-                }
+            const existingUserByEmail = await db.user.findUnique({
+                where: { email: user.emailAddresses[0].emailAddress }
             });
 
-            if (existingUser) {
-                const updatedUser = await db.user.update({
-                    where: { id: existingUser.id },
+            if (existingUserByEmail) {
+                return await db.user.update({
+                    where: { id: existingUserByEmail.id },
                     data: {
                         clerkId: user.id,
                         firstName: user.firstName,
                         lastName: user.lastName
                     }
                 });
-                return updatedUser;
             }
         }
         throw error;

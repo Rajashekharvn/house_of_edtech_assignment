@@ -27,7 +27,28 @@ export async function saveQuizAttempt(
             }
         });
 
+        // Handle Goal Progress
+        const activeGoals = await db.goal.findMany({
+            where: {
+                userId: user.id,
+                metric: "QUIZZES",
+                isCompleted: false
+            }
+        });
+
+        for (const goal of activeGoals) {
+            const newProgress = goal.progress + 1;
+            await db.goal.update({
+                where: { id: goal.id },
+                data: {
+                    progress: newProgress,
+                    isCompleted: newProgress >= goal.target
+                }
+            });
+        }
+
         revalidatePath("/dashboard/paths/[pathId]");
+        revalidatePath("/dashboard");
         return { success: true };
     } catch (error) {
         console.error("Failed to save quiz attempt:", error);

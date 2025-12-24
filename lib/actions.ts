@@ -73,6 +73,79 @@ export async function togglePrivacy(isPrivate: boolean) {
     revalidatePath("/settings");
 }
 
+export async function saveResourceNote(resourceId: string, content: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.resourceNote.create({
+        data: {
+            userId: user.id,
+            resourceId,
+            content
+        }
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/path/${resourceId}`); // Ensure specific path revalidates too if needed
+}
+
+export async function deleteResourceNote(noteId: string, pathId: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.resourceNote.delete({
+        where: { id: noteId, userId: user.id }
+    });
+
+    revalidatePath(`/dashboard/paths/${pathId}`, 'page');
+}
+
+export async function updateResourceNote(noteId: string, content: string, pathId: string) {
+    const user = await checkUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await db.resourceNote.update({
+        where: { id: noteId, userId: user.id },
+        data: { content }
+    });
+
+    revalidatePath(`/dashboard/paths/${pathId}`, 'page');
+}
+
+export async function getResourceNote(resourceId: string) {
+    const user = await checkUser();
+    if (!user) return null;
+
+    const note = await db.resourceNote.findFirst({
+        where: { userId: user.id, resourceId }
+    });
+    return note ? note.content : "";
+}
+
+export async function addGoal(data: { title: string; target: number; type: string; metric: string }) {
+    const user = await checkUser();
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    try {
+        const goal = await db.goal.create({
+            data: {
+                userId: user.id,
+                title: data.title,
+                target: data.target,
+                type: data.type,
+                metric: data.metric,
+            }
+        });
+        revalidatePath("/dashboard");
+        return goal;
+    } catch (error) {
+        console.error("Failed to create goal", error);
+        throw new Error("Failed to create goal");
+    }
+}
+
 export async function exportUserData() {
     const user = await checkUser();
     if (!user) throw new Error("Unauthorized");
@@ -173,11 +246,11 @@ export async function addResource(formData: FormData) {
     if (!user) throw new Error("Unauthorized");
 
     const rawData = {
-        pathId: formData.get("pathId"),
-        title: formData.get("title"),
-        url: formData.get("url") || "",
-        content: formData.get("content"),
-        type: formData.get("type"),
+        pathId: formData.get("pathId") as string,
+        title: formData.get("title") as string,
+        url: (formData.get("url") as string) || undefined,
+        content: (formData.get("content") as string) || undefined,
+        type: formData.get("type") as string,
     };
 
     const validatedData = AddResourceSchema.safeParse(rawData);
@@ -282,6 +355,29 @@ export async function toggleResourceCompletion(resourceId: string, isCompleted: 
                 data: {
                     lastStudyDate: new Date(),
                     streakCount: newStreak
+                }
+            });
+        }
+    }
+
+    // Handle Goal Progress (Only when completing)
+    if (isCompleted) {
+        // Find active RESOURCE goals
+        const activeGoals = await db.goal.findMany({
+            where: {
+                userId: user.id,
+                metric: "RESOURCES",
+                isCompleted: false
+            }
+        });
+
+        for (const goal of activeGoals) {
+            const newProgress = goal.progress + 1;
+            await db.goal.update({
+                where: { id: goal.id },
+                data: {
+                    progress: newProgress,
+                    isCompleted: newProgress >= goal.target
                 }
             });
         }
@@ -465,7 +561,20 @@ export async function getPathDetails(pathId: string) {
                 select: { firstName: true, lastName: true, id: true }
             },
             resources: {
-                select: { id: true, title: true, type: true, url: true, content: true, summary: true, isCompleted: true }
+                select: {
+                    id: true,
+                    title: true,
+                    type: true,
+                    url: true,
+                    content: true,
+                    summary: true,
+                    isCompleted: true,
+                    notes: user ? {
+                        where: { userId: user.id },
+                        select: { id: true, content: true },
+                        orderBy: { createdAt: 'desc' }
+                    } : false
+                }
             },
             _count: {
                 select: { stars: true, resources: true }

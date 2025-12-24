@@ -35,7 +35,7 @@ export function DataExportSection() {
     };
 
     return (
-        <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-black/20">
             <div>
                 <h3 className="text-base font-medium">Export Your Data</h3>
                 <p className="text-sm text-muted-foreground mt-1">
